@@ -1,8 +1,13 @@
+<?php
+require_once 'auth.php';
+requireLogin();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
   <title>Rivek Men's Salon - Staff</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
