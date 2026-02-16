@@ -1,0 +1,11 @@
+# Deny access to sensitive files
+<FilesMatch "\.(sql|example\.php|md)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Deny access to .git directory
+RedirectMatch 404 /\.git
+
+# Set default timezone
+php_value date.timezone "Asia/Kolkata"
