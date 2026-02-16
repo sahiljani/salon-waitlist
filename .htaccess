@@ -1,5 +1,5 @@
 # Deny access to sensitive files
-<FilesMatch "\.(sql|example\.php|md)$">
+<FilesMatch "\.(sql|example\.php|md|env)$">
     Order Allow,Deny
     Deny from all
 </FilesMatch>
