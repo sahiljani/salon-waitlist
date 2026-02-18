@@ -323,7 +323,7 @@
           </div>
           <div class="form-group">
             <label for="phone">Phone Number</label>
-            <input type="tel" id="phone" placeholder="Enter your phone number" required autocomplete="off">
+            <input type="tel" id="phone" placeholder="Enter your phone number" required autocomplete="off" inputmode="numeric" pattern="[0-9]{10}" maxlength="10">
           </div>
           <button type="submit" class="btn-submit" id="submitBtn">Get Token <span class="emoji-icon" aria-hidden="true">🎟️</span></button>
         </form>
@@ -366,8 +366,12 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = document.getElementById('name').value.trim();
-      const phone = document.getElementById('phone').value.trim();
+      const phone = document.getElementById('phone').value.trim().replace(/\D/g, '');
       if (!name || !phone) return;
+      if (phone.length !== 10) {
+        alert('Phone number must be exactly 10 digits');
+        return;
+      }
 
       const btn = document.getElementById('submitBtn');
       btn.disabled = true;
