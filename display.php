@@ -144,12 +144,16 @@
 
     /* Queue Section */
     .queue-section {
-      flex: 1;
+      flex: 0 0 auto;
       display: flex;
       flex-direction: column;
       padding: 10px 20px 10px;
       overflow: hidden;
       min-height: 0;
+    }
+
+    .queue-section.has-scroll {
+      flex: 1;
     }
 
     .queue-header {
@@ -289,10 +293,10 @@
     }
 
     .empty-msg {
-      flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 20px 0;
       font-size: 18px;
       color: rgba(0,0,0,0.12);
     }
@@ -398,11 +402,13 @@
       const staticList = document.getElementById('staticList');
       const scrollSection = document.getElementById('scrollSection');
       const emptyMsg = document.getElementById('emptyMsg');
+      const queueSection = document.querySelector('.queue-section');
 
       if (waiting.length === 0) {
         staticList.innerHTML = '';
         scrollSection.style.display = 'none';
         emptyMsg.style.display = 'flex';
+        queueSection.classList.remove('has-scroll');
         return;
       }
 
@@ -423,6 +429,7 @@
       // Scrolling rest
       if (rest.length > 0) {
         scrollSection.style.display = 'flex';
+        queueSection.classList.add('has-scroll');
 
         // Build items twice for seamless loop
         let items = '';
@@ -445,6 +452,7 @@
         track.style.setProperty('--scroll-duration', duration + 's');
       } else {
         scrollSection.style.display = 'none';
+        queueSection.classList.remove('has-scroll');
       }
     }
 
