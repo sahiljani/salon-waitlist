@@ -9,6 +9,7 @@ requireStaffOrAdmin();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
   <title>Rivek Men's Salon - Staff</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -331,32 +332,35 @@ requireStaffOrAdmin();
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     .toast.error { background: #eb3349; }
     .toast.success { background: #11998e; }
+    .emoji-icon { font-size: 1.25em; line-height: 1; }
+    .label-icon { width: 16px; height: 16px; vertical-align: -3px; margin-left: 4px; }
+    .label-icon-lg { width: 18px; height: 18px; vertical-align: -3px; margin-left: 4px; }
   </style>
 </head>
 <body>
   <div class="header">
     <h1>Rivek Men's Salon</h1>
-    <div style="font-size:13px; opacity:0.8; margin-top:2px;">⚙️</div>
+    <div style="font-size:13px; opacity:0.8; margin-top:2px;">Staff Dashboard <i data-lucide="settings" class="label-icon"></i></div>
     <div class="stats">
       <div class="stat">
         <div class="stat-value" id="statWaiting">0</div>
-        <div class="stat-label">⏳</div>
+        <div class="stat-label">Waiting <i data-lucide="hourglass" class="label-icon"></i></div>
       </div>
       <div class="stat">
         <div class="stat-value" id="statServing">0</div>
-        <div class="stat-label">🪑</div>
+        <div class="stat-label">Serving <i data-lucide="armchair" class="label-icon"></i></div>
       </div>
       <div class="stat">
         <div class="stat-value" id="statDone">0</div>
-        <div class="stat-label">✅</div>
+        <div class="stat-label">Done <i data-lucide="check-circle-2" class="label-icon"></i></div>
       </div>
       <div class="stat">
         <div class="stat-value" id="statNoShow">0</div>
-        <div class="stat-label">🚫</div>
+        <div class="stat-label">No Show <i data-lucide="circle-off" class="label-icon"></i></div>
       </div>
       <div class="stat">
         <div class="stat-value" id="statTotal">0</div>
-        <div class="stat-label">📊</div>
+        <div class="stat-label">Total <i data-lucide="chart-column" class="label-icon"></i></div>
       </div>
     </div>
   </div>
@@ -364,9 +368,9 @@ requireStaffOrAdmin();
   <div class="main">
     <!-- NEXT Button -->
     <div class="action-bar">
-      <button class="btn-next" id="btnNext" onclick="callNext()">🔔 ➡️</button>
+      <button class="btn-next" id="btnNext" onclick="callNext()">Call Next <i data-lucide="bell-ring" class="label-icon-lg"></i></button>
       <div class="chairs-label">
-        <span>🪑</span>
+        <span>Chairs <i data-lucide="armchair" class="label-icon"></i></span>
         <div class="chair-dots">
           <div class="chair-dot" id="dot0"></div>
           <div class="chair-dot" id="dot1"></div>
@@ -378,7 +382,7 @@ requireStaffOrAdmin();
 
     <!-- 4 Chair Cards -->
     <div class="serving-section">
-      <h2>🪑</h2>
+      <h2>Serving Chairs <i data-lucide="armchair" class="label-icon"></i></h2>
       <div class="serving-grid" id="servingGrid">
         <!-- Filled by JS -->
       </div>
@@ -387,23 +391,23 @@ requireStaffOrAdmin();
     <!-- Waiting Queue + Add Token -->
     <div class="bottom-section">
       <div class="card">
-        <h2>⏳</h2>
+        <h2>Waiting Queue <i data-lucide="hourglass" class="label-icon"></i></h2>
         <div class="queue-list" id="queueList">
-          <div class="empty-message">😴</div>
+          <div class="empty-message">No waiting customers <i data-lucide="moon-star" class="label-icon"></i></div>
         </div>
       </div>
 
       <div class="card">
-        <h2>➕</h2>
+        <h2>Add Walk-in <i data-lucide="user-plus" class="label-icon"></i></h2>
         <div class="add-form-group">
-          <label>👤</label>
-          <input type="text" id="manualName" placeholder="👤" autocomplete="off">
+          <label>Name <i data-lucide="user" class="label-icon"></i></label>
+          <input type="text" id="manualName" placeholder="Customer name 👤" autocomplete="off">
         </div>
         <div class="add-form-group">
-          <label>📱</label>
-          <input type="tel" id="manualPhone" placeholder="📱" autocomplete="off">
+          <label>Phone <i data-lucide="phone" class="label-icon"></i></label>
+          <input type="tel" id="manualPhone" placeholder="Phone number 📱" autocomplete="off">
         </div>
-        <button class="btn-add" onclick="addManualToken()">➕ ⏳</button>
+        <button class="btn-add" onclick="addManualToken()">Add to Queue <i data-lucide="plus" class="label-icon"></i></button>
       </div>
     </div>
   </div>
@@ -411,42 +415,42 @@ requireStaffOrAdmin();
   <div id="posModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:2000;align-items:center;justify-content:center;padding:16px;">
     <div style="background:#fff;border-radius:14px;max-width:700px;width:100%;max-height:92vh;overflow:auto;padding:18px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <div style="font-size:22px;font-weight:800;">🧾</div>
-        <button onclick="closePosModal()" style="border:none;background:#f2f2f2;border-radius:8px;padding:8px 12px;cursor:pointer;">✖️</button>
+        <div style="font-size:22px;font-weight:800;">Sale Checkout <span class="emoji-icon">🧾</span></div>
+        <button onclick="closePosModal()" style="border:none;background:#f2f2f2;border-radius:8px;padding:8px 12px;cursor:pointer;">Close <span class="emoji-icon">✖️</span></button>
       </div>
 
       <div id="posTokenInfo" style="font-size:18px;font-weight:700;margin-bottom:10px;"></div>
 
-      <div style="font-size:14px;margin:8px 0;">👤</div>
+      <div style="font-size:14px;margin:8px 0;">Select Staff <span class="emoji-icon">👤</span></div>
       <div id="staffOptions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px;"></div>
 
-      <div style="font-size:14px;margin:8px 0;">✂️</div>
+      <div style="font-size:14px;margin:8px 0;">Select Services <span class="emoji-icon">✂️</span></div>
       <div id="serviceOptions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px;"></div>
 
       <div style="display:grid;grid-template-columns:1fr 120px;gap:8px;align-items:end;margin-bottom:12px;">
         <div>
-          <div style="font-size:14px;margin:8px 0;">➕</div>
-          <input id="otherAmount" type="number" min="1" step="1" placeholder="₹" style="width:100%;padding:10px;border:2px solid #e8e8e8;border-radius:10px;font-size:18px;">
+          <div style="font-size:14px;margin:8px 0;">Other Amount <span class="emoji-icon">➕</span></div>
+          <input id="otherAmount" type="number" min="1" step="1" placeholder="Amount (INR) ₹" style="width:100%;padding:10px;border:2px solid #e8e8e8;border-radius:10px;font-size:18px;">
         </div>
-        <button onclick="addOtherLine()" style="border:none;background:#222;color:#fff;border-radius:10px;padding:12px 10px;font-weight:700;cursor:pointer;">➕</button>
+        <button onclick="addOtherLine()" style="border:none;background:#222;color:#fff;border-radius:10px;padding:12px 10px;font-weight:700;cursor:pointer;">Add <span class="emoji-icon">➕</span></button>
       </div>
 
       <div id="saleItems" style="border:1px solid #eee;border-radius:10px;padding:10px;min-height:60px;margin-bottom:10px;"></div>
 
       <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0;">
-        <input id="discountInput" type="number" min="0" step="1" placeholder="🏷️" style="width:100%;padding:10px;border:2px solid #e8e8e8;border-radius:10px;font-size:18px;">
-        <input id="taxInput" type="number" min="0" step="1" placeholder="🧾" style="width:100%;padding:10px;border:2px solid #e8e8e8;border-radius:10px;font-size:18px;">
+        <input id="discountInput" type="number" min="0" step="1" placeholder="Discount 🏷️" style="width:100%;padding:10px;border:2px solid #e8e8e8;border-radius:10px;font-size:18px;">
+        <input id="taxInput" type="number" min="0" step="1" placeholder="Tax 🧾" style="width:100%;padding:10px;border:2px solid #e8e8e8;border-radius:10px;font-size:18px;">
       </div>
 
       <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0;">
-        <button onclick="setPayment('CASH')" id="payCASH" style="border:none;background:#f3f3f3;border-radius:10px;padding:10px;cursor:pointer;font-weight:700;">💵</button>
-        <button onclick="setPayment('UPI')" id="payUPI" style="border:none;background:#f3f3f3;border-radius:10px;padding:10px;cursor:pointer;font-weight:700;">📱</button>
-        <button onclick="setPayment('CARD')" id="payCARD" style="border:none;background:#f3f3f3;border-radius:10px;padding:10px;cursor:pointer;font-weight:700;">💳</button>
+        <button onclick="setPayment('CASH')" id="payCASH" style="border:none;background:#f3f3f3;border-radius:10px;padding:10px;cursor:pointer;font-weight:700;">Cash 💵</button>
+        <button onclick="setPayment('UPI')" id="payUPI" style="border:none;background:#f3f3f3;border-radius:10px;padding:10px;cursor:pointer;font-weight:700;">UPI 📱</button>
+        <button onclick="setPayment('CARD')" id="payCARD" style="border:none;background:#f3f3f3;border-radius:10px;padding:10px;cursor:pointer;font-weight:700;">Card 💳</button>
       </div>
 
       <div id="posTotals" style="font-size:22px;font-weight:800;margin:10px 0;">₹0</div>
 
-      <button id="completeSaleBtn" onclick="saveSaleAndDone()" style="width:100%;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border-radius:12px;padding:16px;font-size:22px;font-weight:800;cursor:pointer;">✅</button>
+      <button id="completeSaleBtn" onclick="saveSaleAndDone()" style="width:100%;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border-radius:12px;padding:16px;font-size:22px;font-weight:800;cursor:pointer;">Complete Sale ✅</button>
     </div>
   </div>
 
@@ -478,15 +482,15 @@ requireStaffOrAdmin();
             <div class="chair-card occupied">
               <div class="chair-header">
                 <span class="chair-number">🪑 ${i + 1}</span>
-                <span class="chair-status serving">🟢</span>
+                <span class="chair-status serving">Serving 🟢</span>
               </div>
               <div class="chair-token">${person.formatted}</div>
               <div class="chair-name">${person.name}</div>
               <div class="chair-phone">📱 ${person.phone || '-'}</div>
               <div class="chair-actions">
-                <button class="btn-sm btn-done" onclick="openPosModal(${person.id})">✅</button>
+                <button class="btn-sm btn-done" onclick="openPosModal(${person.id})">Done ✅</button>
                 <button class="btn-sm btn-requeue" onclick="backToQueue(${person.id})">BACK TO QUEUE</button>
-                <button class="btn-sm btn-noshow" onclick="markNoShow(${person.id})">🚫</button>
+                <button class="btn-sm btn-noshow" onclick="markNoShow(${person.id})">No Show 🚫</button>
               </div>
             </div>
           `;
@@ -496,15 +500,16 @@ requireStaffOrAdmin();
             <div class="chair-card">
               <div class="chair-header">
                 <span class="chair-number">🪑 ${i + 1}</span>
-                <span class="chair-status available">⚪</span>
+                <span class="chair-status available">Available ⚪</span>
               </div>
-              <div class="chair-empty">⭕</div>
+              <div class="chair-empty">Empty ⭕</div>
             </div>
           `;
         }
       }
 
       grid.innerHTML = html;
+      refreshIcons();
     }
 
     function updateUI(data) {
@@ -518,7 +523,7 @@ requireStaffOrAdmin();
       // Queue list
       const queueList = document.getElementById('queueList');
       if (data.waiting.length === 0) {
-        queueList.innerHTML = '<div class="empty-message">😴</div>';
+        queueList.innerHTML = '<div class="empty-message">No waiting customers <i data-lucide="moon-star" class="label-icon"></i></div>';
       } else {
         queueList.innerHTML = data.waiting.map((item, index) => `
           <div class="queue-item">
@@ -528,10 +533,11 @@ requireStaffOrAdmin();
               <div class="phone">📱 ${item.phone || ''}</div>
             </div>
             <div class="position">#${index + 1}</div>
-            <button class="btn-call" onclick="callSpecific(${item.id})">🔔</button>
+            <button class="btn-call" onclick="callSpecific(${item.id})">Call 🔔</button>
           </div>
         `).join('');
       }
+      refreshIcons();
     }
 
     async function updateStats() {
@@ -612,12 +618,12 @@ requireStaffOrAdmin();
 
       const lines = document.getElementById('saleItems');
       if (currentSale.items.length === 0) {
-        lines.innerHTML = '🧾';
+        lines.innerHTML = 'No items yet 🧾';
       } else {
         lines.innerHTML = currentSale.items.map((line, idx) => `
           <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f4f4f4;">
             <div>${line.icon || '•'} ${line.item_name}</div>
-            <div><b>₹${Number(line.amount).toFixed(0)}</b> <button onclick="removeLine(${idx})" style="border:none;background:#fee2e2;border-radius:6px;padding:4px 8px;cursor:pointer;">🗑️</button></div>
+            <div><b>₹${Number(line.amount).toFixed(0)}</b> <button onclick="removeLine(${idx})" style="border:none;background:#fee2e2;border-radius:6px;padding:4px 8px;cursor:pointer;">Remove 🗑️</button></div>
           </div>
         `).join('');
       }
@@ -628,6 +634,7 @@ requireStaffOrAdmin();
       const total = Math.max(0, subtotal - discount + tax);
       document.getElementById('posTotals').textContent = `₹${total.toFixed(0)}`;
       setPayment(currentSale.paymentMethod);
+      refreshIcons();
     }
 
     function selectStaff(staffId) {
@@ -693,11 +700,11 @@ requireStaffOrAdmin();
         return;
       }
       if (!currentSale.staffId) {
-        showToast('Select 👤', 'error');
+        showToast('Select staff 👤', 'error');
         return;
       }
       if (currentSale.items.length === 0) {
-        showToast('Add ✂️', 'error');
+        showToast('Add at least one service ✂️', 'error');
         return;
       }
 
@@ -734,7 +741,7 @@ requireStaffOrAdmin();
           return;
         }
 
-        showToast('✅', 'success');
+        showToast('Sale completed ✅', 'success');
         closePosModal();
         fetchQueue();
       } catch (err) {
@@ -820,6 +827,13 @@ requireStaffOrAdmin();
     loadPosData();
     fetchQueue();
     setInterval(fetchQueue, 3000);
+    refreshIcons();
+
+    function refreshIcons() {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }
   </script>
 </body>
 </html>

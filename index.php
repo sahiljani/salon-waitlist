@@ -31,10 +31,10 @@
     }
 
     .brand-icon {
-      width: 60px;
-      height: 60px;
+      width: 84px;
+      height: 84px;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 16px;
+      border-radius: 20px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -42,8 +42,8 @@
     }
 
     .brand-icon svg {
-      width: 30px;
-      height: 30px;
+      width: 42px;
+      height: 42px;
       fill: white;
     }
 
@@ -213,8 +213,8 @@
     }
 
     .success-check {
-      width: 50px;
-      height: 50px;
+      width: 64px;
+      height: 64px;
       background: rgba(56, 239, 125, 0.15);
       border-radius: 50%;
       display: inline-flex;
@@ -224,11 +224,16 @@
     }
 
     .success-check svg {
-      width: 26px;
-      height: 26px;
+      width: 34px;
+      height: 34px;
       stroke: #38ef7d;
       fill: none;
       stroke-width: 3;
+    }
+
+    .emoji-icon {
+      font-size: 1.25em;
+      line-height: 1;
     }
 
     .info-text {
@@ -308,7 +313,7 @@
     <!-- Form Card -->
     <div class="form-card">
       <div class="form-state">
-        <div class="form-title">Get Your Token</div>
+        <div class="form-title">Get Your Token <span class="emoji-icon" aria-hidden="true">🎟️</span></div>
         <div class="form-subtitle">Enter your details to join the queue</div>
 
         <form id="tokenForm">
@@ -320,7 +325,7 @@
             <label for="phone">Phone Number</label>
             <input type="tel" id="phone" placeholder="Enter your phone number" required autocomplete="off">
           </div>
-          <button type="submit" class="btn-submit" id="submitBtn">Get Token</button>
+          <button type="submit" class="btn-submit" id="submitBtn">Get Token <span class="emoji-icon" aria-hidden="true">🎟️</span></button>
         </form>
       </div>
 
@@ -328,9 +333,9 @@
         <div class="success-check">
           <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </div>
-        <div class="success-title">You're in the queue!</div>
+        <div class="success-title">You're in the queue! <span class="emoji-icon" aria-hidden="true">✅</span></div>
         <div class="token-card">
-          <div class="token-label">Your Token</div>
+          <div class="token-label">Your Token <span class="emoji-icon" aria-hidden="true">🎫</span></div>
           <div class="token-number" id="tokenNumber"></div>
           <div class="token-name" id="tokenName"></div>
         </div>
@@ -338,7 +343,7 @@
           Please wait for your token to be called.<br>
           Watch the display screen for updates.
         </p>
-        <button class="btn-another" onclick="resetForm()">Get Another Token</button>
+        <button class="btn-another" onclick="resetForm()">Get Another Token <span class="emoji-icon" aria-hidden="true">🔄</span></button>
       </div>
     </div>
 
@@ -366,7 +371,7 @@
 
       const btn = document.getElementById('submitBtn');
       btn.disabled = true;
-      btn.textContent = 'Getting token...';
+      btn.innerHTML = 'Getting token... <span class="emoji-icon" aria-hidden="true">⏳</span>';
 
       try {
         const res = await fetch('api.php?action=create_token', {
@@ -387,7 +392,7 @@
         alert('Failed to get token. Please try again.');
       }
       btn.disabled = false;
-      btn.textContent = 'Get Token';
+      btn.innerHTML = 'Get Token <span class="emoji-icon" aria-hidden="true">🎟️</span>';
     });
 
     function resetForm() {
