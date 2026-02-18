@@ -568,37 +568,37 @@ requireStaffOrAdmin();
       <div class="help-grid">
         <div class="help-row">
           <div class="help-keys">
-            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/ctrl.svg" alt="Ctrl">Ctrl</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/Ctrl.svg" alt="Ctrl">Ctrl</span>
             <span class="help-plus">+</span>
-            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/backspace.svg" alt="Backspace">Backspace</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/Backspace.svg" alt="Backspace">Backspace</span>
           </div>
           <div class="help-text">Add Walk-in</div>
         </div>
         <div class="help-row">
           <div class="help-keys">
-            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/space.svg" alt="Space">Space</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/Space.svg" alt="Space">Space</span>
           </div>
           <div class="help-text">Call Next</div>
         </div>
         <div class="help-row">
           <div class="help-keys">
-            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/alt.svg" alt="Alt">Alt</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/Alt.svg" alt="Alt">Alt</span>
             <span class="help-plus">+</span>
-            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/1.svg" alt="1">1-9</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/1.svg" alt="1">1-9</span>
           </div>
           <div class="help-text">In POS modal: Select Staff by order</div>
         </div>
         <div class="help-row">
           <div class="help-keys">
-            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/shift.svg" alt="Shift">Shift</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/Shift.svg" alt="Shift">Shift</span>
             <span class="help-plus">+</span>
-            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/1.svg" alt="1">1-9</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/1.svg" alt="1">1-9</span>
           </div>
           <div class="help-text">In POS modal: Add Service by order</div>
         </div>
         <div class="help-row">
           <div class="help-keys">
-            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/tab.svg" alt="Tab">Tab</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/Tab.svg" alt="Tab">Tab</span>
           </div>
           <div class="help-text">In POS modal: Move to next field</div>
         </div>
