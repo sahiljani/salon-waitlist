@@ -26,10 +26,17 @@ requireStaffOrAdmin();
       text-align: center;
       position: relative;
     }
-    .logout-link {
+    .header-links {
       position: absolute;
       top: 14px;
       right: 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      max-width: calc(100% - 24px);
+    }
+    .header-link {
       color: #fff;
       text-decoration: none;
       font-size: 13px;
@@ -39,7 +46,7 @@ requireStaffOrAdmin();
       padding: 7px 10px;
       border-radius: 10px;
     }
-    .logout-link:hover { background: rgba(255,255,255,0.26); }
+    .header-link:hover { background: rgba(255,255,255,0.26); }
 
     .header h1 { font-size: 22px; }
 
@@ -391,7 +398,11 @@ requireStaffOrAdmin();
 </head>
 <body>
   <div class="header">
-    <a href="logout.php" class="logout-link">Logout</a>
+    <div class="header-links">
+      <a href="display.php" class="header-link">Display</a>
+      <a href="tel:9601084421" class="header-link">Customer Care</a>
+      <a href="logout.php" class="header-link">Logout</a>
+    </div>
     <h1>Rivek Men's Salon</h1>
     <div style="font-size:13px; opacity:0.8; margin-top:2px;">Staff Dashboard <i data-lucide="settings" class="label-icon"></i></div>
     <div class="stats">
