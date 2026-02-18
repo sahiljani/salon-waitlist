@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - work
+
+jobs:
+  test:
+    name: Lint + Migration Smoke Test
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: salon_ci
+          MYSQL_USER: salon_user
+          MYSQL_PASSWORD: salon_pass
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql
+
+      - name: Create runtime config
+        run: |
+          cp config.example.php config.php
+          cat > config.php <<'PHP'
+          <?php
+          define('DB_HOST', '127.0.0.1');
+          define('DB_NAME', 'salon_ci');
+          define('DB_USER', 'salon_user');
+          define('DB_PASS', 'salon_pass');
+
+          function getDB() {
+              try {
+                  $pdo = new PDO(
+                      "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
+                      DB_USER,
+                      DB_PASS,
+                      [
+                          PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                          PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+                      ]
+                  );
+                  return $pdo;
+              } catch (PDOException $e) {
+                  die(json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]));
+              }
+          }
+
+          function getToday() {
+              return date('Y-m-d');
+          }
+
+          function formatToken($num) {
+              return 'T-' . str_pad($num, 3, '0', STR_PAD_LEFT);
+          }
+          PHP
+
+      - name: Create env
+        run: |
+          cat > .env <<'ENV'
+          ADMIN_PASSWORD=admin_ci
+          STAFF_PASSWORD=staff_ci
+          ENV
+
+      - name: PHP syntax lint
+        run: |
+          php -l api.php
+          php -l admin.php
+          php -l auth.php
+          php -l login.php
+          php -l staff.php
+          php -l db_setup.php
+          php -l migrate.php
+          php -l migrate_rollback.php
+          php -l db/migrations/20260218_000001_create_tokens_table.php
+          php -l db/migrations/20260218_000002_create_pos_tables.php
+
+      - name: Run migrations
+        run: php migrate.php
+
+      - name: Migration idempotency check
+        run: php migrate.php
+
+      - name: Rollback latest batch
+        run: php migrate_rollback.php
+
+      - name: Re-run migrations after rollback
+        run: php migrate.php
