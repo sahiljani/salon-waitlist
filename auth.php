@@ -16,20 +16,74 @@ function loadEnv() {
     }
 }
 
-function getAdminPassword() {
-    if (!isset($_ENV['ADMIN_PASSWORD'])) {
+function envValue($key, $default = '') {
+    if (!isset($_ENV[$key])) {
         loadEnv();
     }
-    return $_ENV['ADMIN_PASSWORD'] ?? '';
+    return $_ENV[$key] ?? $default;
+}
+
+function getAdminPassword() {
+    return envValue('ADMIN_PASSWORD', '');
+}
+
+function getStaffPassword() {
+    $staff = envValue('STAFF_PASSWORD', '');
+    if ($staff === '') {
+        return getAdminPassword();
+    }
+    return $staff;
+}
+
+function loginAsRole($role) {
+    session_regenerate_id(true);
+    $_SESSION['is_logged_in'] = true;
+    $_SESSION['role'] = $role;
 }
 
 function isLoggedIn() {
-    return isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true;
+    return isset($_SESSION['is_logged_in']) && $_SESSION['is_logged_in'] === true;
+}
+
+function currentRole() {
+    return $_SESSION['role'] ?? null;
+}
+
+function isAdmin() {
+    return currentRole() === 'admin';
+}
+
+function isStaff() {
+    return currentRole() === 'staff';
 }
 
 function requireLogin() {
     if (!isLoggedIn()) {
         header('Location: login.php');
+        exit;
+    }
+}
+
+function requireAdmin() {
+    requireLogin();
+    if (!isAdmin()) {
+        header('Location: staff.php');
+        exit;
+    }
+}
+
+function requireStaffOrAdmin() {
+    requireLogin();
+    if (!isAdmin() && !isStaff()) {
+        header('Location: login.php');
+        exit;
+    }
+}
+
+function requireAdminApi() {
+    if (!isLoggedIn() || !isAdmin()) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Admin access required']);
         exit;
     }
 }
