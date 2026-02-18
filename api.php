@@ -1,9 +1,11 @@
 <?php
 require_once 'config.php';
+require_once 'models/Token.php';
 
 header('Content-Type: application/json');
 
 $pdo = getDB();
+$token = new Token($pdo);
 $action = $_GET['action'] ?? '';
 $today = getToday();
 
@@ -11,34 +13,34 @@ define('MAX_SERVING', 4);
 
 switch ($action) {
     case 'create_token':
-        createToken($pdo, $today);
+        createToken($token, $today);
         break;
     case 'get_queue':
-        getQueue($pdo, $today);
+        getQueue($token, $today);
         break;
     case 'next':
-        callNext($pdo, $today);
+        callNext($token, $today);
         break;
     case 'done':
-        markDone($pdo, $today);
+        markDone($token, $today);
         break;
     case 'noshow':
-        markNoShow($pdo, $today);
+        markNoShow($token, $today);
         break;
     case 'call_specific':
-        callSpecific($pdo, $today);
+        callSpecific($token, $today);
         break;
     case 'back_to_queue':
-        backToQueue($pdo, $today);
+        backToQueue($token, $today);
         break;
     case 'stats':
-        getStats($pdo, $today);
+        getStats($token, $today);
         break;
     default:
         echo json_encode(['error' => 'Invalid action']);
 }
 
-function createToken($pdo, $today) {
+function createToken($token, $today) {
     $input = json_decode(file_get_contents('php://input'), true);
     $name = trim($input['name'] ?? '');
     $phone = trim($input['phone'] ?? '');
@@ -55,13 +57,14 @@ function createToken($pdo, $today) {
         return;
     }
 
-    $stmt = $pdo->prepare("SELECT MAX(token_no) as max_token FROM tokens WHERE date = ?");
-    $stmt->execute([$today]);
-    $result = $stmt->fetch();
-    $tokenNo = ($result['max_token'] ?? 0) + 1;
+    $tokenNo = $token->nextTokenNumber($today);
 
-    $stmt = $pdo->prepare("INSERT INTO tokens (token_no, name, phone, date) VALUES (?, ?, ?, ?)");
-    $stmt->execute([$tokenNo, $name, $phone, $today]);
+    $token->create([
+        'token_no' => $tokenNo,
+        'name' => $name,
+        'phone' => $phone,
+        'date' => $today
+    ]);
 
     echo json_encode([
         'token_no' => $tokenNo,
@@ -71,16 +74,9 @@ function createToken($pdo, $today) {
     ]);
 }
 
-function getQueue($pdo, $today) {
-    // Get all currently serving (up to 4)
-    $stmt = $pdo->prepare("SELECT id, token_no, name, phone FROM tokens WHERE date = ? AND status = 'SERVING' ORDER BY token_no ASC");
-    $stmt->execute([$today]);
-    $servingAll = $stmt->fetchAll();
-
-    // Get waiting list
-    $stmt = $pdo->prepare("SELECT id, token_no, name, phone FROM tokens WHERE date = ? AND status = 'WAITING' ORDER BY token_no ASC");
-    $stmt->execute([$today]);
-    $waiting = $stmt->fetchAll();
+function getQueue($token, $today) {
+    $servingAll = $token->getServing($today);
+    $waiting = $token->getWaiting($today);
 
     $formatRow = function($t) {
         return [
@@ -101,11 +97,8 @@ function getQueue($pdo, $today) {
     ]);
 }
 
-function callNext($pdo, $today) {
-    // Check how many are currently being served
-    $stmt = $pdo->prepare("SELECT COUNT(*) as cnt FROM tokens WHERE date = ? AND status = 'SERVING'");
-    $stmt->execute([$today]);
-    $count = (int)$stmt->fetch()['cnt'];
+function callNext($token, $today) {
+    $count = $token->count(['date' => $today, 'status' => 'SERVING']);
 
     if ($count >= MAX_SERVING) {
         http_response_code(400);
@@ -113,10 +106,7 @@ function callNext($pdo, $today) {
         return;
     }
 
-    // Get next waiting
-    $stmt = $pdo->prepare("SELECT id, token_no, name, phone FROM tokens WHERE date = ? AND status = 'WAITING' ORDER BY token_no ASC LIMIT 1");
-    $stmt->execute([$today]);
-    $next = $stmt->fetch();
+    $next = $token->first(['date' => $today, 'status' => 'WAITING'], 'token_no ASC');
 
     if (!$next) {
         http_response_code(400);
@@ -124,8 +114,7 @@ function callNext($pdo, $today) {
         return;
     }
 
-    $stmt = $pdo->prepare("UPDATE tokens SET status = 'SERVING' WHERE id = ?");
-    $stmt->execute([$next['id']]);
+    $token->update($next['id'], ['status' => 'SERVING']);
 
     echo json_encode([
         'token_no' => (int)$next['token_no'],
@@ -135,7 +124,7 @@ function callNext($pdo, $today) {
     ]);
 }
 
-function callSpecific($pdo, $today) {
+function callSpecific($token, $today) {
     $input = json_decode(file_get_contents('php://input'), true);
     $id = $input['id'] ?? null;
 
@@ -145,9 +134,7 @@ function callSpecific($pdo, $today) {
         return;
     }
 
-    $stmt = $pdo->prepare("SELECT COUNT(*) as cnt FROM tokens WHERE date = ? AND status = 'SERVING'");
-    $stmt->execute([$today]);
-    $count = (int)$stmt->fetch()['cnt'];
+    $count = $token->count(['date' => $today, 'status' => 'SERVING']);
 
     if ($count >= MAX_SERVING) {
         http_response_code(400);
@@ -155,42 +142,36 @@ function callSpecific($pdo, $today) {
         return;
     }
 
-    $stmt = $pdo->prepare("SELECT id, token_no, name, phone FROM tokens WHERE id = ? AND date = ? AND status = 'WAITING'");
-    $stmt->execute([$id, $today]);
-    $token = $stmt->fetch();
+    $t = $token->first(['id' => $id, 'date' => $today, 'status' => 'WAITING']);
 
-    if (!$token) {
+    if (!$t) {
         http_response_code(400);
         echo json_encode(['error' => 'Token not found or not waiting']);
         return;
     }
 
-    $stmt = $pdo->prepare("UPDATE tokens SET status = 'SERVING' WHERE id = ?");
-    $stmt->execute([$id]);
+    $token->update($id, ['status' => 'SERVING']);
 
     echo json_encode([
-        'token_no' => (int)$token['token_no'],
-        'formatted' => formatToken($token['token_no']),
-        'name' => $token['name'],
-        'phone' => $token['phone']
+        'token_no' => (int)$t['token_no'],
+        'formatted' => formatToken($t['token_no']),
+        'name' => $t['name'],
+        'phone' => $t['phone']
     ]);
 }
 
-function markDone($pdo, $today) {
+function markDone($token, $today) {
     $input = json_decode(file_get_contents('php://input'), true);
     $id = $input['id'] ?? null;
 
     if ($id) {
-        // Mark specific token as done
-        $stmt = $pdo->prepare("SELECT id FROM tokens WHERE id = ? AND date = ? AND status = 'SERVING'");
-        $stmt->execute([$id, $today]);
-        if (!$stmt->fetch()) {
+        $t = $token->first(['id' => $id, 'date' => $today, 'status' => 'SERVING']);
+        if (!$t) {
             http_response_code(400);
             echo json_encode(['error' => 'Token not found or not being served']);
             return;
         }
-        $stmt = $pdo->prepare("UPDATE tokens SET status = 'DONE' WHERE id = ?");
-        $stmt->execute([$id]);
+        $token->update($id, ['status' => 'DONE']);
     } else {
         http_response_code(400);
         echo json_encode(['error' => 'Please specify which customer to complete']);
@@ -200,20 +181,18 @@ function markDone($pdo, $today) {
     echo json_encode(['success' => true]);
 }
 
-function markNoShow($pdo, $today) {
+function markNoShow($token, $today) {
     $input = json_decode(file_get_contents('php://input'), true);
     $id = $input['id'] ?? null;
 
     if ($id) {
-        $stmt = $pdo->prepare("SELECT id FROM tokens WHERE id = ? AND date = ? AND status = 'SERVING'");
-        $stmt->execute([$id, $today]);
-        if (!$stmt->fetch()) {
+        $t = $token->first(['id' => $id, 'date' => $today, 'status' => 'SERVING']);
+        if (!$t) {
             http_response_code(400);
             echo json_encode(['error' => 'Token not found or not being served']);
             return;
         }
-        $stmt = $pdo->prepare("UPDATE tokens SET status = 'NO_SHOW' WHERE id = ?");
-        $stmt->execute([$id]);
+        $token->update($id, ['status' => 'NO_SHOW']);
     } else {
         http_response_code(400);
         echo json_encode(['error' => 'Please specify which customer']);
@@ -223,7 +202,7 @@ function markNoShow($pdo, $today) {
     echo json_encode(['success' => true]);
 }
 
-function backToQueue($pdo, $today) {
+function backToQueue($token, $today) {
     $input = json_decode(file_get_contents('php://input'), true);
     $id = $input['id'] ?? null;
 
@@ -233,41 +212,22 @@ function backToQueue($pdo, $today) {
         return;
     }
 
-    $stmt = $pdo->prepare("SELECT id, token_no, name FROM tokens WHERE id = ? AND date = ? AND status = 'SERVING'");
-    $stmt->execute([$id, $today]);
-    $token = $stmt->fetch();
+    $t = $token->first(['id' => $id, 'date' => $today, 'status' => 'SERVING']);
 
-    if (!$token) {
+    if (!$t) {
         http_response_code(400);
         echo json_encode(['error' => 'Token not found or not being served']);
         return;
     }
 
-    // Get highest token number so they go to the end
-    $stmt = $pdo->prepare("SELECT MAX(token_no) as max_token FROM tokens WHERE date = ?");
-    $stmt->execute([$today]);
-    $maxToken = (int)($stmt->fetch()['max_token'] ?? 0);
-    $newTokenNo = $maxToken + 1;
+    $newTokenNo = $token->nextTokenNumber($today);
+    $token->update($id, ['status' => 'WAITING', 'token_no' => $newTokenNo]);
 
-    $stmt = $pdo->prepare("UPDATE tokens SET status = 'WAITING', token_no = ? WHERE id = ?");
-    $stmt->execute([$newTokenNo, $id]);
-
-    echo json_encode(['success' => true, 'name' => $token['name'], 'formatted' => formatToken($newTokenNo)]);
+    echo json_encode(['success' => true, 'name' => $t['name'], 'formatted' => formatToken($newTokenNo)]);
 }
 
-function getStats($pdo, $today) {
-    $stmt = $pdo->prepare("
-        SELECT
-            COUNT(*) as total,
-            SUM(CASE WHEN status = 'WAITING' THEN 1 ELSE 0 END) as waiting,
-            SUM(CASE WHEN status = 'SERVING' THEN 1 ELSE 0 END) as serving,
-            SUM(CASE WHEN status = 'DONE' THEN 1 ELSE 0 END) as done,
-            SUM(CASE WHEN status = 'NO_SHOW' THEN 1 ELSE 0 END) as noshow
-        FROM tokens
-        WHERE date = ?
-    ");
-    $stmt->execute([$today]);
-    $stats = $stmt->fetch();
+function getStats($token, $today) {
+    $stats = $token->getStats($today);
 
     echo json_encode([
         'total' => (int)($stats['total'] ?? 0),
