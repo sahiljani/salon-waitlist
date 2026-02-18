@@ -348,12 +348,32 @@ requireStaffOrAdmin();
       border-radius: 10px;
       opacity: 0;
       transition: all 0.3s;
-      z-index: 1000;
+      z-index: 3000;
       font-size: 15px;
     }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-    .toast.error { background: #eb3349; }
+    .toast.error {
+      background: #b42318;
+      font-size: 18px;
+      font-weight: 800;
+      border: 2px solid #fecaca;
+      box-shadow: 0 10px 24px rgba(180, 35, 24, 0.35);
+    }
     .toast.success { background: #11998e; }
+    .hotkey-flash {
+      animation: hotkeyFlash 0.35s ease-out 1;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.35) !important;
+      transform: scale(1.02);
+    }
+    .error-emphasis {
+      border-color: #dc2626 !important;
+      box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.22) !important;
+    }
+    @keyframes hotkeyFlash {
+      from { transform: scale(1); }
+      50% { transform: scale(1.035); }
+      to { transform: scale(1.02); }
+    }
     .emoji-icon { font-size: 1.25em; line-height: 1; }
     .label-icon { width: 16px; height: 16px; vertical-align: -3px; margin-left: 4px; }
     .label-icon-lg { width: 18px; height: 18px; vertical-align: -3px; margin-left: 4px; }
@@ -470,7 +490,7 @@ requireStaffOrAdmin();
           <label>Phone <i data-lucide="phone" class="label-icon"></i></label>
           <input type="tel" id="manualPhone" placeholder="Phone number" autocomplete="off" inputmode="numeric" pattern="[0-9]{10}" maxlength="10">
         </div>
-        <button class="btn-add" onclick="addManualToken()">Add to Queue <i data-lucide="plus" class="label-icon"></i></button>
+        <button class="btn-add" id="btnAddWalkIn" onclick="addManualToken()">Add to Queue <i data-lucide="plus" class="label-icon"></i></button>
       </div>
     </div>
   </div>
@@ -522,6 +542,7 @@ requireStaffOrAdmin();
     let serviceList = [];
     let currentSale = { token: null, staffId: null, items: [], paymentMethod: 'CASH' };
     const soundEnabled = true;
+    let toastTimer = null;
 
     function makeAudio(candidates) {
       const audio = new Audio(candidates[0]);
@@ -587,7 +608,119 @@ requireStaffOrAdmin();
       const toast = document.getElementById('toast');
       toast.textContent = message;
       toast.className = 'toast show ' + type;
-      setTimeout(() => { toast.className = 'toast'; }, 3000);
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toast.className = 'toast'; }, type === 'error' ? 4200 : 3000);
+    }
+
+    function flashElement(element) {
+      if (!element) return;
+      element.classList.remove('hotkey-flash');
+      void element.offsetWidth;
+      element.classList.add('hotkey-flash');
+      setTimeout(() => element.classList.remove('hotkey-flash'), 420);
+    }
+
+    function emphasizeError(element) {
+      if (!element) return;
+      element.classList.add('error-emphasis');
+      setTimeout(() => element.classList.remove('error-emphasis'), 1600);
+      if (typeof element.focus === 'function') {
+        element.focus({ preventScroll: false });
+      }
+    }
+
+    function showValidationError(message, element) {
+      showToast(message, 'error');
+      emphasizeError(element);
+    }
+
+    function isPosModalOpen() {
+      return document.getElementById('posModal').style.display === 'flex';
+    }
+
+    function isEditableTarget(target) {
+      return Boolean(
+        target &&
+        (
+          target.closest('input, textarea, select, [contenteditable="true"]') ||
+          target.isContentEditable
+        )
+      );
+    }
+
+    function getModalFocusableElements() {
+      const modal = document.getElementById('posModal');
+      return Array.from(
+        modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+      ).filter((el) => !el.disabled && el.offsetParent !== null);
+    }
+
+    function trapModalTab(event) {
+      const focusable = getModalFocusableElements();
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+        return;
+      }
+      if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    function triggerAddWalkInByShortcut() {
+      const btn = document.getElementById('btnAddWalkIn');
+      flashElement(btn);
+      addManualToken();
+    }
+
+    function triggerCallNextByShortcut() {
+      const btn = document.getElementById('btnNext');
+      if (!btn || btn.disabled) {
+        showToast('Call Next unavailable', 'error');
+        emphasizeError(btn);
+        return;
+      }
+      flashElement(btn);
+      callNext();
+    }
+
+    function handleModalDigitShortcuts(event) {
+      if (!isPosModalOpen()) return false;
+      const isDigit = /^Digit[1-9]$/.test(event.code);
+      if (!isDigit) return false;
+      const idx = Number(event.code.replace('Digit', '')) - 1;
+
+      if (event.altKey && !event.ctrlKey && !event.metaKey) {
+        event.preventDefault();
+        const staff = staffList[idx];
+        if (!staff) {
+          showToast('Staff shortcut not available', 'error');
+          emphasizeError(document.getElementById('staffOptions'));
+          return true;
+        }
+        selectStaff(staff.id);
+        flashElement(document.getElementById('staffOptions'));
+        return true;
+      }
+
+      if (event.shiftKey && !event.altKey && !event.ctrlKey && !event.metaKey) {
+        event.preventDefault();
+        const service = serviceList[idx];
+        if (!service) {
+          showToast('Service shortcut not available', 'error');
+          emphasizeError(document.getElementById('serviceOptions'));
+          return true;
+        }
+        addServiceLine(service.id);
+        flashElement(document.getElementById('serviceOptions'));
+        return true;
+      }
+
+      return false;
     }
 
     function renderChairs(serving) {
@@ -808,7 +941,7 @@ requireStaffOrAdmin();
     function addOtherLine() {
       const amount = Number(document.getElementById('otherAmount').value || 0);
       if (amount <= 0) {
-        showToast('Enter amount', 'error');
+        showValidationError('Enter amount', document.getElementById('otherAmount'));
         return;
       }
       currentSale.items.push({
@@ -840,19 +973,23 @@ requireStaffOrAdmin();
       document.getElementById('discountInput').value = '';
       document.getElementById('posModal').style.display = 'flex';
       renderPos();
+      const focusable = getModalFocusableElements();
+      if (focusable.length) {
+        setTimeout(() => focusable[0].focus(), 0);
+      }
     }
 
     async function saveSaleAndDone() {
       if (!currentSale.token) {
-        showToast('No token', 'error');
+        showValidationError('No token', document.getElementById('completeSaleBtn'));
         return;
       }
       if (!currentSale.staffId) {
-        showToast('Select staff', 'error');
+        showValidationError('Select staff', document.getElementById('staffOptions'));
         return;
       }
       if (currentSale.items.length === 0) {
-        showToast('Add at least one service', 'error');
+        showValidationError('Add at least one service', document.getElementById('serviceOptions'));
         return;
       }
 
@@ -949,11 +1086,11 @@ requireStaffOrAdmin();
       const phone = document.getElementById('manualPhone').value.trim().replace(/\D/g, '');
 
       if (!name || !phone) {
-        showToast('Name and phone are required', 'error');
+        showValidationError('Name and phone are required', !name ? document.getElementById('manualName') : document.getElementById('manualPhone'));
         return;
       }
       if (phone.length !== 10) {
-        showToast('Phone number must be exactly 10 digits', 'error');
+        showValidationError('Phone number must be exactly 10 digits', document.getElementById('manualPhone'));
         return;
       }
 
@@ -976,6 +1113,28 @@ requireStaffOrAdmin();
     // Enter key for add form
     document.getElementById('manualPhone').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') addManualToken();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (handleModalDigitShortcuts(e)) return;
+
+      if (isPosModalOpen() && e.key === 'Tab') {
+        trapModalTab(e);
+        return;
+      }
+
+      if (e.ctrlKey && !e.altKey && !e.metaKey && e.key === 'Backspace') {
+        if (!isPosModalOpen()) {
+          e.preventDefault();
+          triggerAddWalkInByShortcut();
+        }
+        return;
+      }
+
+      if (!isPosModalOpen() && !isEditableTarget(e.target) && e.code === 'Space' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        e.preventDefault();
+        triggerCallNextByShortcut();
+      }
     });
 
     loadPosData();
