@@ -568,37 +568,37 @@ requireStaffOrAdmin();
       <div class="help-grid">
         <div class="help-row">
           <div class="help-keys">
-            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/Ctrl.svg" alt="Ctrl">Ctrl</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/Ctrl.svg" alt="">Ctrl</span>
             <span class="help-plus">+</span>
-            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/Backspace.svg" alt="Backspace">Backspace</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/Backspace.svg" alt="">Backspace</span>
           </div>
           <div class="help-text">Add Walk-in</div>
         </div>
         <div class="help-row">
           <div class="help-keys">
-            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/Space.svg" alt="Space">Space</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/Space.svg" alt="">Space</span>
           </div>
           <div class="help-text">Call Next</div>
         </div>
         <div class="help-row">
           <div class="help-keys">
-            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/Alt.svg" alt="Alt">Alt</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/Alt.svg" alt="">Alt</span>
             <span class="help-plus">+</span>
-            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/1.svg" alt="1">1-9</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/1.svg" alt="">1-9</span>
           </div>
           <div class="help-text">In POS modal: Select Staff by order</div>
         </div>
         <div class="help-row">
           <div class="help-keys">
-            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/Shift.svg" alt="Shift">Shift</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/Shift.svg" alt="">Shift</span>
             <span class="help-plus">+</span>
-            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/1.svg" alt="1">1-9</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/1.svg" alt="">1-9</span>
           </div>
           <div class="help-text">In POS modal: Add Service by order</div>
         </div>
         <div class="help-row">
           <div class="help-keys">
-            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/Tab.svg" alt="Tab">Tab</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/refs/heads/main/out/windows/dark/large/Tab.svg" alt="">Tab</span>
           </div>
           <div class="help-text">In POS modal: Move to next field</div>
         </div>
@@ -780,9 +780,12 @@ requireStaffOrAdmin();
 
     function handleModalDigitShortcuts(event) {
       if (!isPosModalOpen()) return false;
-      const isDigit = /^Digit[1-9]$/.test(event.code);
-      if (!isDigit) return false;
-      const idx = Number(event.code.replace('Digit', '')) - 1;
+      const topRowDigit = /^Digit[1-9]$/.test(event.code) ? Number(event.code.replace('Digit', '')) : null;
+      const numPadDigit = /^Numpad[1-9]$/.test(event.code) ? Number(event.code.replace('Numpad', '')) : null;
+      const keyDigit = /^[1-9]$/.test(event.key) ? Number(event.key) : null;
+      const digit = topRowDigit || numPadDigit || keyDigit;
+      if (!digit) return false;
+      const idx = digit - 1;
 
       if (event.altKey && !event.ctrlKey && !event.metaKey) {
         event.preventDefault();
