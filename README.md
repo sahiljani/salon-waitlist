@@ -11,6 +11,12 @@ A real-time token-based queue management system for Rivek Men's Salon, Ahmedabad
 | Staff Dashboard | `staff.php` | Password-protected admin panel to manage the queue |
 | Login | `login.php` | Staff authentication page |
 
+Pretty URLs (via `.htaccess`):
+
+- `domain/` → customer page
+- `domain/admin` → admin panel (auto-redirects to login if not authenticated)
+- `domain/display` → queue display
+
 ## Features
 
 - **4-chair system** — up to 4 customers can be served simultaneously
@@ -43,10 +49,11 @@ php db_setup.php
 Create a `.env` file in the project root:
 
 ```
-ADMIN_PASSWORD=YourStaffPassword
+ADMIN_PASSWORD=YourAdminPassword
+STAFF_PASSWORD=YourStaffPassword
 ```
 
-This password is used for the staff dashboard login.
+Admin and staff can use the same login URL. Role is decided by password.
 
 ### 3. Deploy
 
@@ -91,3 +98,31 @@ All endpoints go through `api.php?action=<action>`:
 | `noshow` | POST | `{id}` | Mark a serving customer as no-show |
 | `back_to_queue` | POST | `{id}` | Send a serving customer back to the queue |
 | `stats` | GET | — | Get counts (total, waiting, serving, done, no-show) |
+| `get_staff` | GET | — | Get active staff list for POS |
+| `get_services` | GET | — | Get active services catalog for POS |
+| `create_sale` | POST | `{token_id, staff_id, items, discount?, tax?, payment_method}` | Create POS bill |
+| `get_sale` | GET | `sale_id` query | Fetch bill header + items |
+| `daily_sales` | GET | — | Daily sales totals + breakdown by service |
+| `staff_sales` | GET | — | Daily sales grouped by staff |
+
+| `admin_list_staff` | GET | — | Admin-only staff listing |
+| `admin_create_staff` | POST | `{name, icon}` | Admin-only create staff |
+| `admin_update_staff` | POST | `{id, ...}` | Admin-only update/toggle staff |
+| `admin_list_services` | GET | — | Admin-only service listing |
+| `admin_create_service` | POST | `{name, price, icon}` | Admin-only create service |
+| `admin_update_service` | POST | `{id, ...}` | Admin-only update/toggle service |
+
+
+## Architecture direction (Laravel-style)
+
+Laravel primarily follows **MVC** with clear layer separation:
+
+- **Routes/Controller**: request entry + orchestration
+- **Model**: database entities and persistence
+- **Service layer** (optional but recommended): business rules/workflows
+- **Policies/Middleware**: authorization and role checks
+
+This project now mirrors that direction in lightweight PHP by:
+- Keeping API actions in `api.php` as controller-like handlers.
+- Keeping DB schema and table responsibilities separate (`tokens` for queue, `sales*` for POS).
+- Enforcing role-based access for admin CRUD (staff/services) via `auth.php` guards.

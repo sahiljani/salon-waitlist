@@ -9,3 +9,11 @@ RedirectMatch 404 /\.git
 
 # Set default timezone
 php_value date.timezone "Asia/Kolkata"
+
+RewriteEngine On
+
+# Pretty routes
+RewriteRule ^admin/?$ admin.php [L,QSA]
+RewriteRule ^display/?$ display.php [L,QSA]
+
+RewriteRule ^login/?$ login.php [L,QSA]
