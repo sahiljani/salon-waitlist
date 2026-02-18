@@ -2,6 +2,7 @@
 require_once 'config.php';
 require_once 'models/Token.php';
 require_once 'auth.php';
+require_once 'migrations.php';
 
 header('Content-Type: application/json');
 
@@ -78,6 +79,14 @@ switch ($action) {
     case 'admin_update_service':
         requireAdminApi();
         adminUpdateService($pdo);
+        break;
+    case 'admin_db_stats':
+        requireAdminApi();
+        adminDbStats($pdo, $token, $today);
+        break;
+    case 'admin_run_migrations':
+        requireAdminApi();
+        adminRunMigrations($pdo, $token, $today);
         break;
     default:
         echo json_encode(['error' => 'Invalid action']);
@@ -604,5 +613,47 @@ function adminUpdateService($pdo) {
     $stmt = $pdo->prepare($sql);
     $stmt->execute($values);
     echo json_encode(['success' => true]);
+}
+
+function adminDbStats($pdo, $token, $today) {
+    $tables = ['tokens', 'staff', 'services', 'sales', 'sale_items'];
+    $db = collectDbStats($pdo, $tables);
+    $tokenStats = $token->getStats($today);
+
+    echo json_encode([
+        'db' => $db,
+        'today_tokens' => [
+            'total' => (int)($tokenStats['total'] ?? 0),
+            'waiting' => (int)($tokenStats['waiting'] ?? 0),
+            'serving' => (int)($tokenStats['serving'] ?? 0),
+            'done' => (int)($tokenStats['done'] ?? 0),
+            'noshow' => (int)($tokenStats['noshow'] ?? 0)
+        ]
+    ]);
+}
+
+function adminRunMigrations($pdo, $token, $today) {
+    try {
+        $steps = runMigrations($pdo);
+        $tables = ['tokens', 'staff', 'services', 'sales', 'sale_items'];
+        $db = collectDbStats($pdo, $tables);
+        $tokenStats = $token->getStats($today);
+
+        echo json_encode([
+            'success' => true,
+            'steps' => $steps,
+            'db' => $db,
+            'today_tokens' => [
+                'total' => (int)($tokenStats['total'] ?? 0),
+                'waiting' => (int)($tokenStats['waiting'] ?? 0),
+                'serving' => (int)($tokenStats['serving'] ?? 0),
+                'done' => (int)($tokenStats['done'] ?? 0),
+                'noshow' => (int)($tokenStats['noshow'] ?? 0)
+            ]
+        ]);
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Migration failed: ' . $e->getMessage()]);
+    }
 }
 
