@@ -88,6 +88,10 @@ switch ($action) {
         requireAdminApi();
         adminRunMigrations($pdo, $token, $today);
         break;
+    case 'admin_sales_report':
+        requireAdminApi();
+        adminSalesReport($pdo);
+        break;
     default:
         echo json_encode(['error' => 'Invalid action']);
 }
@@ -106,6 +110,12 @@ function createToken($token, $today) {
     if (empty($phone)) {
         http_response_code(400);
         echo json_encode(['error' => 'Phone number is required']);
+        return;
+    }
+    $phone = preg_replace('/\D+/', '', $phone);
+    if (strlen($phone) !== 10) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Phone number must be exactly 10 digits']);
         return;
     }
 
@@ -655,5 +665,62 @@ function adminRunMigrations($pdo, $token, $today) {
         http_response_code(500);
         echo json_encode(['error' => 'Migration failed: ' . $e->getMessage()]);
     }
+}
+
+function adminSalesReport($pdo) {
+    $date = trim($_GET['date'] ?? '');
+    $staffId = (int)($_GET['staff_id'] ?? 0);
+
+    $where = [];
+    $params = [];
+
+    if ($date !== '') {
+        $where[] = 's.sale_date = ?';
+        $params[] = $date;
+    }
+    if ($staffId > 0) {
+        $where[] = 's.staff_id = ?';
+        $params[] = $staffId;
+    }
+
+    $whereSql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
+
+    $summaryStmt = $pdo->prepare("
+        SELECT
+            COUNT(*) AS bills,
+            COALESCE(SUM(s.total), 0) AS total_sales,
+            COALESCE(SUM(s.discount), 0) AS total_discount
+        FROM sales s
+        $whereSql
+    ");
+    $summaryStmt->execute($params);
+    $summary = $summaryStmt->fetch() ?: ['bills' => 0, 'total_sales' => 0, 'total_discount' => 0];
+
+    $rowsStmt = $pdo->prepare("
+        SELECT
+            s.id,
+            s.sale_date,
+            t.token_no,
+            t.name AS customer_name,
+            st.name AS staff_name,
+            s.payment_method,
+            s.total
+        FROM sales s
+        JOIN tokens t ON t.id = s.token_id
+        JOIN staff st ON st.id = s.staff_id
+        $whereSql
+        ORDER BY s.sale_date DESC, s.id DESC
+        LIMIT 500
+    ");
+    $rowsStmt->execute($params);
+
+    echo json_encode([
+        'summary' => [
+            'bills' => (int)($summary['bills'] ?? 0),
+            'total_sales' => (float)($summary['total_sales'] ?? 0),
+            'total_discount' => (float)($summary['total_discount'] ?? 0)
+        ],
+        'rows' => $rowsStmt->fetchAll()
+    ]);
 }
 

@@ -24,7 +24,22 @@ requireStaffOrAdmin();
       color: white;
       padding: 20px;
       text-align: center;
+      position: relative;
     }
+    .logout-link {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      color: #fff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.28);
+      padding: 7px 10px;
+      border-radius: 10px;
+    }
+    .logout-link:hover { background: rgba(255,255,255,0.26); }
 
     .header h1 { font-size: 22px; }
 
@@ -335,10 +350,49 @@ requireStaffOrAdmin();
     .emoji-icon { font-size: 1.25em; line-height: 1; }
     .label-icon { width: 16px; height: 16px; vertical-align: -3px; margin-left: 4px; }
     .label-icon-lg { width: 18px; height: 18px; vertical-align: -3px; margin-left: 4px; }
+    .pos-overlay { display:none; position:fixed; inset:0; background:rgba(15,23,42,0.58); z-index:2000; align-items:center; justify-content:center; padding:16px; }
+    .pos-modal { background:#fff; border-radius:16px; max-width:760px; width:100%; max-height:92vh; overflow:auto; padding:18px; box-shadow:0 25px 60px rgba(2,6,23,0.35); }
+    .pos-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:10px; }
+    .pos-title { font-size:34px; font-weight:800; display:flex; align-items:center; gap:8px; }
+    .pos-close { border:none; background:#f2f4f7; border-radius:10px; padding:9px 12px; cursor:pointer; font-weight:700; display:flex; align-items:center; gap:6px; }
+    .pos-token { font-size:22px; font-weight:700; margin-bottom:12px; }
+    .pos-label { font-size:14px; margin:10px 0 8px; font-weight:700; color:#334155; display:flex; align-items:center; gap:6px; }
+    .pos-grid { display:grid; gap:8px; margin-bottom:12px; }
+    .pos-grid.staff { grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); }
+    .pos-grid.services { grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); }
+    .pos-btn { border:none; border-radius:12px; padding:12px 10px; cursor:pointer; font-size:17px; font-weight:700; background:#f3f4f6; color:#111; display:flex; justify-content:center; align-items:center; gap:8px; transition:all .18s; position:relative; }
+    .pos-btn:hover { transform:translateY(-1px); box-shadow:0 8px 20px rgba(15,23,42,0.12); }
+    .pos-btn.active { background:#6366f1; color:#fff; }
+    .pos-service-btn { min-height:58px; flex-direction:column; line-height:1.2; gap:2px; }
+    .pos-service-btn .price { font-size:24px; font-weight:800; }
+    .svc-count { position:absolute; top:6px; right:6px; background:#111827; color:#fff; border-radius:999px; font-size:12px; line-height:1; padding:4px 7px; min-width:22px; text-align:center; }
+    .pos-other { display:grid; grid-template-columns:1fr 120px; gap:8px; align-items:end; margin-bottom:12px; }
+    .pos-input { width:100%; padding:11px; border:2px solid #e8e8e8; border-radius:10px; font-size:18px; }
+    .pos-input:focus { outline:none; border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,0.14); }
+    .sale-items { border:1px solid #eee; border-radius:10px; padding:10px; min-height:64px; margin-bottom:10px; }
+    .sale-row { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid #f4f4f4; gap:8px; }
+    .sale-row:last-child { border-bottom:none; }
+    .sale-remove { border:none; background:#fee2e2; border-radius:6px; padding:5px 8px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
+    .pos-adjust { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:8px 0; }
+    .pos-pay { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:10px 0; }
+    .pay-btn.active { background:#22c55e; color:#fff; }
+    .pos-total { font-size:22px; font-weight:800; margin:10px 0; }
+    .pos-complete { width:100%; border:none; background:linear-gradient(135deg,#22c55e,#16a34a); color:#fff; border-radius:12px; padding:16px; font-size:32px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .icon-16 { width:16px; height:16px; }
+    .icon-18 { width:18px; height:18px; }
+    @media (max-width: 640px) {
+      .pos-other { grid-template-columns:1fr; }
+      .pos-title { font-size:24px; }
+      .pos-complete { font-size:28px; }
+      .pos-grid.services { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .pos-grid.staff { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .pos-pay { grid-template-columns:1fr; }
+    }
   </style>
 </head>
 <body>
   <div class="header">
+    <a href="logout.php" class="logout-link">Logout</a>
     <h1>Rivek Men's Salon</h1>
     <div style="font-size:13px; opacity:0.8; margin-top:2px;">Staff Dashboard <i data-lucide="settings" class="label-icon"></i></div>
     <div class="stats">
@@ -401,56 +455,55 @@ requireStaffOrAdmin();
         <h2>Add Walk-in <i data-lucide="user-plus" class="label-icon"></i></h2>
         <div class="add-form-group">
           <label>Name <i data-lucide="user" class="label-icon"></i></label>
-          <input type="text" id="manualName" placeholder="Customer name 👤" autocomplete="off">
+          <input type="text" id="manualName" placeholder="Customer name" autocomplete="off">
         </div>
         <div class="add-form-group">
           <label>Phone <i data-lucide="phone" class="label-icon"></i></label>
-          <input type="tel" id="manualPhone" placeholder="Phone number 📱" autocomplete="off">
+          <input type="tel" id="manualPhone" placeholder="Phone number" autocomplete="off" inputmode="numeric" pattern="[0-9]{10}" maxlength="10">
         </div>
         <button class="btn-add" onclick="addManualToken()">Add to Queue <i data-lucide="plus" class="label-icon"></i></button>
       </div>
     </div>
   </div>
 
-  <div id="posModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:2000;align-items:center;justify-content:center;padding:16px;">
-    <div style="background:#fff;border-radius:14px;max-width:700px;width:100%;max-height:92vh;overflow:auto;padding:18px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <div style="font-size:22px;font-weight:800;">Sale Checkout <span class="emoji-icon">🧾</span></div>
-        <button onclick="closePosModal()" style="border:none;background:#f2f2f2;border-radius:8px;padding:8px 12px;cursor:pointer;">Close <span class="emoji-icon">✖️</span></button>
+  <div id="posModal" class="pos-overlay">
+    <div class="pos-modal">
+      <div class="pos-head">
+        <div class="pos-title">Sale Checkout <i data-lucide="receipt-text" class="icon-18"></i></div>
+        <button onclick="closePosModal()" class="pos-close">Close <i data-lucide="x" class="icon-16"></i></button>
       </div>
 
-      <div id="posTokenInfo" style="font-size:18px;font-weight:700;margin-bottom:10px;"></div>
+      <div id="posTokenInfo" class="pos-token"></div>
 
-      <div style="font-size:14px;margin:8px 0;">Select Staff <span class="emoji-icon">👤</span></div>
-      <div id="staffOptions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px;"></div>
+      <div class="pos-label">Select Staff <i data-lucide="user" class="icon-16"></i></div>
+      <div id="staffOptions" class="pos-grid staff"></div>
 
-      <div style="font-size:14px;margin:8px 0;">Select Services <span class="emoji-icon">✂️</span></div>
-      <div id="serviceOptions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px;"></div>
+      <div class="pos-label">Select Services <i data-lucide="scissors" class="icon-16"></i></div>
+      <div id="serviceOptions" class="pos-grid services"></div>
 
-      <div style="display:grid;grid-template-columns:1fr 120px;gap:8px;align-items:end;margin-bottom:12px;">
+      <div class="pos-other">
         <div>
-          <div style="font-size:14px;margin:8px 0;">Other Amount <span class="emoji-icon">➕</span></div>
-          <input id="otherAmount" type="number" min="1" step="1" placeholder="Amount (INR) ₹" style="width:100%;padding:10px;border:2px solid #e8e8e8;border-radius:10px;font-size:18px;">
+          <div class="pos-label">Other Amount <i data-lucide="plus-circle" class="icon-16"></i></div>
+          <input id="otherAmount" type="number" min="1" step="1" placeholder="Amount (INR) ₹" class="pos-input">
         </div>
-        <button onclick="addOtherLine()" style="border:none;background:#222;color:#fff;border-radius:10px;padding:12px 10px;font-weight:700;cursor:pointer;">Add <span class="emoji-icon">➕</span></button>
+        <button onclick="addOtherLine()" class="pos-btn">Add <i data-lucide="plus" class="icon-16"></i></button>
       </div>
 
-      <div id="saleItems" style="border:1px solid #eee;border-radius:10px;padding:10px;min-height:60px;margin-bottom:10px;"></div>
+      <div id="saleItems" class="sale-items"></div>
 
-      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0;">
-        <input id="discountInput" type="number" min="0" step="1" placeholder="Discount 🏷️" style="width:100%;padding:10px;border:2px solid #e8e8e8;border-radius:10px;font-size:18px;">
-        <input id="taxInput" type="number" min="0" step="1" placeholder="Tax 🧾" style="width:100%;padding:10px;border:2px solid #e8e8e8;border-radius:10px;font-size:18px;">
+      <div class="pos-adjust">
+        <input id="discountInput" type="number" min="0" step="1" placeholder="Discount" class="pos-input">
       </div>
 
-      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0;">
-        <button onclick="setPayment('CASH')" id="payCASH" style="border:none;background:#f3f3f3;border-radius:10px;padding:10px;cursor:pointer;font-weight:700;">Cash 💵</button>
-        <button onclick="setPayment('UPI')" id="payUPI" style="border:none;background:#f3f3f3;border-radius:10px;padding:10px;cursor:pointer;font-weight:700;">UPI 📱</button>
-        <button onclick="setPayment('CARD')" id="payCARD" style="border:none;background:#f3f3f3;border-radius:10px;padding:10px;cursor:pointer;font-weight:700;">Card 💳</button>
+      <div class="pos-pay">
+        <button onclick="setPayment('CASH')" id="payCASH" class="pos-btn pay-btn">Cash <i data-lucide="wallet" class="icon-16"></i></button>
+        <button onclick="setPayment('UPI')" id="payUPI" class="pos-btn pay-btn">UPI <i data-lucide="smartphone" class="icon-16"></i></button>
+        <button onclick="setPayment('CARD')" id="payCARD" class="pos-btn pay-btn">Card <i data-lucide="credit-card" class="icon-16"></i></button>
       </div>
 
-      <div id="posTotals" style="font-size:22px;font-weight:800;margin:10px 0;">₹0</div>
+      <div id="posTotals" class="pos-total">₹0</div>
 
-      <button id="completeSaleBtn" onclick="saveSaleAndDone()" style="width:100%;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border-radius:12px;padding:16px;font-size:22px;font-weight:800;cursor:pointer;">Complete Sale ✅</button>
+      <button id="completeSaleBtn" onclick="saveSaleAndDone()" class="pos-complete">Complete Sale <i data-lucide="check-circle-2" class="icon-18"></i></button>
     </div>
   </div>
 
@@ -481,16 +534,16 @@ requireStaffOrAdmin();
           html += `
             <div class="chair-card occupied">
               <div class="chair-header">
-                <span class="chair-number">🪑 ${i + 1}</span>
-                <span class="chair-status serving">Serving 🟢</span>
+                <span class="chair-number"><i data-lucide="armchair" class="icon-16"></i> ${i + 1}</span>
+                <span class="chair-status serving">Serving</span>
               </div>
               <div class="chair-token">${person.formatted}</div>
               <div class="chair-name">${person.name}</div>
-              <div class="chair-phone">📱 ${person.phone || '-'}</div>
+              <div class="chair-phone"><i data-lucide="phone" class="icon-16"></i> ${person.phone || '-'}</div>
               <div class="chair-actions">
-                <button class="btn-sm btn-done" onclick="openPosModal(${person.id})">Done ✅</button>
+                <button class="btn-sm btn-done" onclick="openPosModal(${person.id})">Done <i data-lucide="check-circle-2" class="icon-16"></i></button>
                 <button class="btn-sm btn-requeue" onclick="backToQueue(${person.id})">BACK TO QUEUE</button>
-                <button class="btn-sm btn-noshow" onclick="markNoShow(${person.id})">No Show 🚫</button>
+                <button class="btn-sm btn-noshow" onclick="markNoShow(${person.id})">No Show <i data-lucide="circle-off" class="icon-16"></i></button>
               </div>
             </div>
           `;
@@ -499,10 +552,10 @@ requireStaffOrAdmin();
           html += `
             <div class="chair-card">
               <div class="chair-header">
-                <span class="chair-number">🪑 ${i + 1}</span>
-                <span class="chair-status available">Available ⚪</span>
+                <span class="chair-number"><i data-lucide="armchair" class="icon-16"></i> ${i + 1}</span>
+                <span class="chair-status available">Available</span>
               </div>
-              <div class="chair-empty">Empty ⭕</div>
+              <div class="chair-empty">Empty <i data-lucide="minus-circle" class="icon-16"></i></div>
             </div>
           `;
         }
@@ -530,10 +583,10 @@ requireStaffOrAdmin();
             <div class="token">${item.formatted}</div>
             <div class="info">
               <div class="name">${item.name}</div>
-              <div class="phone">📱 ${item.phone || ''}</div>
+              <div class="phone"><i data-lucide="phone" class="icon-16"></i> ${item.phone || ''}</div>
             </div>
             <div class="position">#${index + 1}</div>
-            <button class="btn-call" onclick="callSpecific(${item.id})">Call 🔔</button>
+            <button class="btn-call" onclick="callSpecific(${item.id})">Call <i data-lucide="bell-ring" class="icon-16"></i></button>
           </div>
         `).join('');
       }
@@ -600,38 +653,62 @@ requireStaffOrAdmin();
       currentSale.paymentMethod = method;
       ['CASH', 'UPI', 'CARD'].forEach((m) => {
         const btn = document.getElementById('pay' + m);
-        btn.style.background = m === method ? '#22c55e' : '#f3f3f3';
-        btn.style.color = m === method ? '#fff' : '#111';
+        btn.classList.toggle('active', m === method);
       });
+    }
+
+    function getServiceIcon(serviceName) {
+      const n = (serviceName || '').toLowerCase();
+      if (n.includes('shave')) return 'razor';
+      if (n.includes('wash')) return 'shower-head';
+      if (n.includes('facial')) return 'sparkles';
+      return 'scissors';
     }
 
     function renderPos() {
       const staffWrap = document.getElementById('staffOptions');
       staffWrap.innerHTML = staffList.map((st) => `
-        <button onclick="selectStaff(${st.id})" style="border:none;border-radius:10px;padding:10px;cursor:pointer;font-size:18px;background:${currentSale.staffId === st.id ? '#6366f1' : '#f3f3f3'};color:${currentSale.staffId === st.id ? '#fff' : '#111'};">${st.icon || '👤'} ${st.name}</button>
+        <button onclick="selectStaff(${st.id})" class="pos-btn ${currentSale.staffId === st.id ? 'active' : ''}">
+          <i data-lucide="user" class="icon-16"></i>
+          <span>${st.name}</span>
+        </button>
       `).join('');
+
+      const serviceCounts = {};
+      currentSale.items.forEach((line) => {
+        if (line.service_id) {
+          serviceCounts[line.service_id] = (serviceCounts[line.service_id] || 0) + 1;
+        }
+      });
 
       const svcWrap = document.getElementById('serviceOptions');
       svcWrap.innerHTML = serviceList.map((svc) => `
-        <button onclick="addServiceLine(${svc.id})" style="border:none;border-radius:10px;padding:10px;cursor:pointer;font-size:16px;background:#f3f3f3;">${svc.icon || '✂️'} ${svc.name}<br><b>₹${Number(svc.price).toFixed(0)}</b></button>
+        <button onclick="addServiceLine(${svc.id})" class="pos-btn pos-service-btn">
+          <i data-lucide="${getServiceIcon(svc.name)}" class="icon-16"></i>
+          <span>${svc.name}</span>
+          <span class="price">₹${Number(svc.price).toFixed(0)}</span>
+          ${serviceCounts[svc.id] ? `<span class="svc-count">${serviceCounts[svc.id]}</span>` : ''}
+        </button>
       `).join('');
 
       const lines = document.getElementById('saleItems');
       if (currentSale.items.length === 0) {
-        lines.innerHTML = 'No items yet 🧾';
+        lines.innerHTML = '<div style="color:#64748b; display:flex; align-items:center; gap:8px;">No items yet <i data-lucide="receipt-text" class="icon-16"></i></div>';
       } else {
         lines.innerHTML = currentSale.items.map((line, idx) => `
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f4f4f4;">
-            <div>${line.icon || '•'} ${line.item_name}</div>
-            <div><b>₹${Number(line.amount).toFixed(0)}</b> <button onclick="removeLine(${idx})" style="border:none;background:#fee2e2;border-radius:6px;padding:4px 8px;cursor:pointer;">Remove 🗑️</button></div>
+          <div class="sale-row">
+            <div>${line.item_name}</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <b>₹${Number(line.amount).toFixed(0)}</b>
+              <button onclick="removeLine(${idx})" class="sale-remove" title="Remove item"><i data-lucide="trash-2" class="icon-16"></i></button>
+            </div>
           </div>
         `).join('');
       }
 
       const subtotal = currentSale.items.reduce((sum, item) => sum + Number(item.amount), 0);
       const discount = Number(document.getElementById('discountInput').value || 0);
-      const tax = Number(document.getElementById('taxInput').value || 0);
-      const total = Math.max(0, subtotal - discount + tax);
+      const total = Math.max(0, subtotal - discount);
       document.getElementById('posTotals').textContent = `₹${total.toFixed(0)}`;
       setPayment(currentSale.paymentMethod);
       refreshIcons();
@@ -650,8 +727,7 @@ requireStaffOrAdmin();
         item_name: svc.name,
         qty: 1,
         unit_price: Number(svc.price),
-        amount: Number(svc.price),
-        icon: svc.icon || '✂️'
+        amount: Number(svc.price)
       });
       renderPos();
     }
@@ -659,15 +735,14 @@ requireStaffOrAdmin();
     function addOtherLine() {
       const amount = Number(document.getElementById('otherAmount').value || 0);
       if (amount <= 0) {
-        showToast('Enter ₹', 'error');
+        showToast('Enter amount', 'error');
         return;
       }
       currentSale.items.push({
         item_name: 'Other',
         qty: 1,
         unit_price: amount,
-        amount,
-        icon: '➕'
+        amount
       });
       document.getElementById('otherAmount').value = '';
       renderPos();
@@ -689,7 +764,6 @@ requireStaffOrAdmin();
       currentSale = { token, staffId: null, items: [], paymentMethod: 'CASH' };
       document.getElementById('posTokenInfo').textContent = `${token.formatted} • ${token.name}`;
       document.getElementById('discountInput').value = '';
-      document.getElementById('taxInput').value = '';
       document.getElementById('posModal').style.display = 'flex';
       renderPos();
     }
@@ -700,16 +774,16 @@ requireStaffOrAdmin();
         return;
       }
       if (!currentSale.staffId) {
-        showToast('Select staff 👤', 'error');
+        showToast('Select staff', 'error');
         return;
       }
       if (currentSale.items.length === 0) {
-        showToast('Add at least one service ✂️', 'error');
+        showToast('Add at least one service', 'error');
         return;
       }
 
       const discount = Number(document.getElementById('discountInput').value || 0);
-      const tax = Number(document.getElementById('taxInput').value || 0);
+      const tax = 0;
 
       try {
         const saleRes = await fetch('api.php?action=create_sale', {
@@ -741,7 +815,7 @@ requireStaffOrAdmin();
           return;
         }
 
-        showToast('Sale completed ✅', 'success');
+        showToast('Sale completed', 'success');
         closePosModal();
         fetchQueue();
       } catch (err) {
@@ -796,10 +870,14 @@ requireStaffOrAdmin();
 
     async function addManualToken() {
       const name = document.getElementById('manualName').value.trim();
-      const phone = document.getElementById('manualPhone').value.trim();
+      const phone = document.getElementById('manualPhone').value.trim().replace(/\D/g, '');
 
       if (!name || !phone) {
-        showToast('👤 + 📱', 'error');
+        showToast('Name and phone are required', 'error');
+        return;
+      }
+      if (phone.length !== 10) {
+        showToast('Phone number must be exactly 10 digits', 'error');
         return;
       }
 
