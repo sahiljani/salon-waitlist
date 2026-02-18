@@ -1,0 +1,13 @@
+# Sensitive config (has DB credentials)
+config.php
+
+# IDE / OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+Thumbs.db
+.DS_Store
+
+# Claude Code
+.claude/
