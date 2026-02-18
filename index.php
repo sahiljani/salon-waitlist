@@ -345,7 +345,7 @@
     <!-- Footer -->
     <div class="footer">
       <div class="footer-row">
-        <a href="https://instagram.com/riveksalon" target="_blank">@riveksalon</a>
+        <a href="https://instagram.com/rivek_mens_salon" target="_blank">@rivek_mens_salon</a>
         <div class="dot"></div>
         <a href="tel:9601084421">96010 84421</a>
       </div>
