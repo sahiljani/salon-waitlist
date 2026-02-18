@@ -366,7 +366,7 @@ requireStaffOrAdmin();
     .pos-service-btn .price { font-size:24px; font-weight:800; }
     .pos-service-btn.has-items { background:#e0e7ff; color:#312e81; border:1px solid #a5b4fc; }
     .svc-count { position:absolute; top:6px; right:6px; background:#111827; color:#fff; border-radius:999px; font-size:12px; line-height:1; padding:4px 7px; min-width:22px; text-align:center; }
-    .pos-other { display:grid; grid-template-columns:1fr 120px; gap:8px; align-items:end; margin-bottom:12px; }
+    .pos-other { display:grid; grid-template-columns:1fr 1fr 120px; gap:8px; align-items:end; margin-bottom:12px; }
     .pos-input { width:100%; padding:11px; border:2px solid #e8e8e8; border-radius:10px; font-size:18px; }
     .pos-input:focus { outline:none; border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,0.14); }
     .sale-items { border:1px solid #e2e8f0; border-radius:12px; padding:12px; min-height:90px; margin-bottom:12px; background:#f8fafc; }
@@ -476,10 +476,6 @@ requireStaffOrAdmin();
       <div class="pos-label">Select Staff <i data-lucide="user" class="icon-16"></i></div>
       <div id="staffOptions" class="pos-grid staff"></div>
 
-      <div class="pos-adjust" style="margin-top:4px;">
-        <input id="discountInput" type="number" min="0" step="1" placeholder="Discount (₹)" class="pos-input">
-      </div>
-
       <div class="pos-label">Select Services <i data-lucide="scissors" class="icon-16"></i></div>
       <div id="serviceOptions" class="pos-grid services"></div>
 
@@ -487,6 +483,10 @@ requireStaffOrAdmin();
         <div>
           <div class="pos-label">Other Amount <i data-lucide="plus-circle" class="icon-16"></i></div>
           <input id="otherAmount" type="number" min="1" step="1" placeholder="Amount (INR) ₹" class="pos-input">
+        </div>
+        <div>
+          <div class="pos-label">Discount <i data-lucide="badge-percent" class="icon-16"></i></div>
+          <input id="discountInput" type="number" min="0" step="1" placeholder="Discount (₹)" class="pos-input">
         </div>
         <button onclick="addOtherLine()" class="pos-btn">Add <i data-lucide="plus" class="icon-16"></i></button>
       </div>
@@ -511,14 +511,28 @@ requireStaffOrAdmin();
     let staffList = [];
     let serviceList = [];
     let currentSale = { token: null, staffId: null, items: [], paymentMethod: 'CASH' };
-    const SOUND_ENABLED_KEY = 'salon_sfx_enabled';
-    let soundEnabled = localStorage.getItem(SOUND_ENABLED_KEY) !== '0';
+    const soundEnabled = true;
+
+    function makeAudio(candidates) {
+      const audio = new Audio(candidates[0]);
+      let idx = 0;
+      audio.addEventListener('error', () => {
+        idx += 1;
+        if (idx < candidates.length) {
+          audio.src = candidates[idx];
+          audio.load();
+        }
+      });
+      return audio;
+    }
+
     const sounds = {
-      select: new Audio('assets/audio/ui-select.mp3'),
-      serviceAdd: new Audio('assets/audio/select-service.mp3'),
-      remove: new Audio('assets/audio/remove-item.mp3'),
-      notify: new Audio('assets/audio/notify.mp3')
+      select: makeAudio(['assets/audio/ui-select.mp3']),
+      serviceAdd: makeAudio(['assets/audio/select-service.mp3', 'assets/audio/ui-select.mp3']),
+      remove: makeAudio(['assets/audio/remove-item.mp3', 'assets/audio/ui-select.mp3']),
+      notify: makeAudio(['assets/audio/notify.mp3', 'assets/audio/ui-select.mp3'])
     };
+
     Object.values(sounds).forEach((audio) => {
       audio.preload = 'auto';
       audio.volume = 0.6;
@@ -533,6 +547,31 @@ requireStaffOrAdmin();
         audio.play().catch(() => {});
       } catch (e) {}
     }
+
+    let audioPrimed = false;
+    function primeAudio() {
+      if (audioPrimed) return;
+      audioPrimed = true;
+      Object.values(sounds).forEach((audio) => {
+        try {
+          const originalVolume = audio.volume;
+          audio.volume = 0;
+          const p = audio.play();
+          if (p && typeof p.then === 'function') {
+            p.then(() => {
+              audio.pause();
+              audio.currentTime = 0;
+              audio.volume = originalVolume;
+            }).catch(() => {
+              audio.volume = originalVolume;
+            });
+          } else {
+            audio.volume = originalVolume;
+          }
+        } catch (e) {}
+      });
+    }
+    document.addEventListener('click', primeAudio, { once: true });
 
     function showToast(message, type = '') {
       const toast = document.getElementById('toast');
