@@ -19,8 +19,8 @@ requireAdmin();
     h2 { margin: 0 0 10px; font-size: 18px; }
     table { width:100%; border-collapse: collapse; }
     th, td { border-bottom: 1px solid #eee; padding: 8px; text-align: left; font-size: 14px; }
-    .row { display:grid; grid-template-columns:1fr 90px 90px; gap:8px; margin-bottom:8px; }
-    .row.staff { grid-template-columns:1fr 90px; }
+    .row { display:grid; grid-template-columns:1fr 120px; gap:8px; margin-bottom:8px; }
+    .row.staff { grid-template-columns:1fr; }
     input { width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; }
     button { border:none; border-radius:8px; padding:8px 10px; cursor:pointer; font-weight:600; }
     .btn-primary { background:#4f46e5; color:white; }
@@ -47,37 +47,35 @@ requireAdmin();
 </head>
 <body>
   <div class="header">
-    <div><strong>Admin Panel</strong> · Staff & Services Management</div>
+    <div><strong>Admin Panel 👑</strong> · Staff & Services Management 🛠️</div>
     <div>
-      <button class="btn-dark" onclick="openDbToolsModal()">DB Tools</button>
-      <a href="staff.php">Staff Dashboard</a>
+      <button class="btn-dark" onclick="openDbToolsModal()">DB Tools 🗄️</button>
+      <a href="staff.php">Staff Dashboard 👥</a>
     </div>
   </div>
 
   <div class="wrap">
     <div class="card">
-      <h2>Staff CRUD</h2>
+      <h2>Staff CRUD 👥</h2>
       <div class="row staff">
         <input id="staffName" placeholder="Staff name">
-        <input id="staffIcon" placeholder="Icon" value="👤">
       </div>
-      <button class="btn-primary" onclick="createStaff()">Add Staff</button>
+      <button class="btn-primary" onclick="createStaff()">Add Staff ➕</button>
       <table style="margin-top:10px;">
-        <thead><tr><th>ID</th><th>Name</th><th>Icon</th><th>Status</th><th>Actions</th></tr></thead>
+        <thead><tr><th>ID</th><th>Name</th><th>Status</th><th>Actions</th></tr></thead>
         <tbody id="staffTable"></tbody>
       </table>
     </div>
 
     <div class="card">
-      <h2>Services/Pricing CRUD</h2>
+      <h2>Services/Pricing CRUD ✂️</h2>
       <div class="row">
         <input id="serviceName" placeholder="Service name">
         <input id="servicePrice" type="number" step="0.01" min="0" placeholder="Price">
-        <input id="serviceIcon" placeholder="Icon" value="✂️">
       </div>
-      <button class="btn-primary" onclick="createService()">Add Service</button>
+      <button class="btn-primary" onclick="createService()">Add Service ➕</button>
       <table style="margin-top:10px;">
-        <thead><tr><th>ID</th><th>Name</th><th>Price</th><th>Icon</th><th>Status</th><th>Actions</th></tr></thead>
+        <thead><tr><th>ID</th><th>Name</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
         <tbody id="serviceTable"></tbody>
       </table>
     </div>
@@ -86,8 +84,8 @@ requireAdmin();
   <div class="modal-backdrop" id="dbToolsBackdrop" onclick="closeDbToolsModal(event)">
     <div class="modal">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
-        <h2 style="margin:0;">Database Tools</h2>
-        <button class="btn-muted" onclick="forceCloseDbToolsModal()">Close</button>
+        <h2 style="margin:0;">Database Tools 🗄️</h2>
+        <button class="btn-muted" onclick="forceCloseDbToolsModal()">Close ✖️</button>
       </div>
 
       <p style="margin:10px 0 0;color:#4b5563;font-size:14px;">
@@ -95,8 +93,8 @@ requireAdmin();
       </p>
 
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
-        <button class="btn-primary" id="runMigrationBtn" onclick="runMigrations()">Run Migrations</button>
-        <button class="btn-muted" onclick="loadDbStats()">Refresh Stats</button>
+        <button class="btn-primary" id="runMigrationBtn" onclick="runMigrations()">Run Migrations ▶️</button>
+        <button class="btn-muted" onclick="loadDbStats()">Refresh Stats 🔄</button>
       </div>
 
       <div id="dbToolsStatus" style="margin-top:10px;font-size:13px;color:#4b5563;">Loading stats...</div>
@@ -145,11 +143,10 @@ requireAdmin();
         tbody.innerHTML = data.staff.map((s) => `
           <tr>
             <td>${s.id}</td>
-            <td><input value="${s.name}" onchange="updateStaff(${s.id}, this.value, null)"></td>
-            <td><input value="${s.icon || ''}" onchange="updateStaff(${s.id}, null, this.value)"></td>
+            <td><input value="${s.name}" onchange="updateStaff(${s.id}, this.value)"></td>
             <td>${s.is_active == 1 ? 'Active' : 'Inactive'}</td>
             <td>
-              <button class="btn-muted" onclick="toggleStaff(${s.id}, ${s.is_active == 1 ? 0 : 1})">${s.is_active == 1 ? 'Deactivate' : 'Activate'}</button>
+              <button class="btn-muted" onclick="toggleStaff(${s.id}, ${s.is_active == 1 ? 0 : 1})">${s.is_active == 1 ? 'Deactivate ⏸️' : 'Activate ▶️'}</button>
             </td>
           </tr>
         `).join('');
@@ -165,9 +162,8 @@ requireAdmin();
             <td>${s.id}</td>
             <td><input value="${s.name}" onchange="updateService(${s.id}, {name: this.value})"></td>
             <td><input type="number" min="0" step="0.01" value="${s.price}" onchange="updateService(${s.id}, {price: this.value})"></td>
-            <td><input value="${s.icon || ''}" onchange="updateService(${s.id}, {icon: this.value})"></td>
             <td>${s.is_active == 1 ? 'Active' : 'Inactive'}</td>
-            <td><button class="btn-muted" onclick="toggleService(${s.id}, ${s.is_active == 1 ? 0 : 1})">${s.is_active == 1 ? 'Deactivate' : 'Activate'}</button></td>
+            <td><button class="btn-muted" onclick="toggleService(${s.id}, ${s.is_active == 1 ? 0 : 1})">${s.is_active == 1 ? 'Deactivate ⏸️' : 'Activate ▶️'}</button></td>
           </tr>
         `).join('');
       } catch (e) { toast(e.message); }
@@ -176,8 +172,7 @@ requireAdmin();
     async function createStaff() {
       try {
         await api('admin_create_staff', {
-          name: document.getElementById('staffName').value,
-          icon: document.getElementById('staffIcon').value
+          name: document.getElementById('staffName').value
         }, 'POST');
         document.getElementById('staffName').value = '';
         toast('Staff created');
@@ -185,11 +180,10 @@ requireAdmin();
       } catch (e) { toast(e.message); }
     }
 
-    async function updateStaff(id, name, icon) {
+    async function updateStaff(id, name) {
       try {
         const payload = { id };
         if (name !== null) payload.name = name;
-        if (icon !== null) payload.icon = icon;
         await api('admin_update_staff', payload, 'POST');
         toast('Updated');
       } catch (e) { toast(e.message); }
@@ -207,8 +201,7 @@ requireAdmin();
       try {
         await api('admin_create_service', {
           name: document.getElementById('serviceName').value,
-          price: document.getElementById('servicePrice').value,
-          icon: document.getElementById('serviceIcon').value
+          price: document.getElementById('servicePrice').value
         }, 'POST');
         document.getElementById('serviceName').value = '';
         document.getElementById('servicePrice').value = '';
@@ -243,17 +236,17 @@ requireAdmin();
       const tokenGrid = document.getElementById('tokenStatsGrid');
       tokenGrid.innerHTML = `
         <div class="stat-box"><div class="v">${tokenStats.total || 0}</div><div class="k">Total</div></div>
-        <div class="stat-box"><div class="v">${tokenStats.waiting || 0}</div><div class="k">Waiting</div></div>
-        <div class="stat-box"><div class="v">${tokenStats.serving || 0}</div><div class="k">Serving</div></div>
-        <div class="stat-box"><div class="v">${tokenStats.done || 0}</div><div class="k">Done</div></div>
-        <div class="stat-box"><div class="v">${tokenStats.noshow || 0}</div><div class="k">No-show</div></div>
+        <div class="stat-box"><div class="v">${tokenStats.waiting || 0}</div><div class="k">Waiting ⏳</div></div>
+        <div class="stat-box"><div class="v">${tokenStats.serving || 0}</div><div class="k">Serving 🪑</div></div>
+        <div class="stat-box"><div class="v">${tokenStats.done || 0}</div><div class="k">Done ✅</div></div>
+        <div class="stat-box"><div class="v">${tokenStats.noshow || 0}</div><div class="k">No-show 🚫</div></div>
       `;
 
       const rows = Object.keys(tables).map((name) => {
         const row = tables[name];
         return `<tr><td>${name}</td><td>${row.exists ? 'Yes' : 'No'}</td><td>${row.rows || 0}</td></tr>`;
       }).join('');
-      document.getElementById('dbTableStats').innerHTML = rows || '<tr><td colspan="3">No data</td></tr>';
+      document.getElementById('dbTableStats').innerHTML = rows || '<tr><td colspan="3">No data 📭</td></tr>';
     }
 
     async function loadDbStats() {

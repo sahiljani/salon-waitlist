@@ -311,7 +311,7 @@
 
   <!-- Top: 4 Chairs -->
   <div class="serving-bar">
-    <div class="serving-label">Now Serving</div>
+    <div class="serving-label">Now Serving 🔔</div>
     <div class="serving-row" id="servingRow"></div>
   </div>
 
@@ -320,7 +320,7 @@
   <!-- Bottom: Queue -->
   <div class="queue-section">
     <div class="queue-header">
-      <div class="queue-label">Waiting Queue</div>
+      <div class="queue-label">Waiting Queue ⏳</div>
       <div class="queue-count" id="queueCount"></div>
     </div>
     <!-- Static first 5 -->
@@ -328,12 +328,12 @@
     <!-- Scrolling rest -->
     <div id="scrollSection" style="display:none; flex:1; display:flex; flex-direction:column; min-height:0; overflow:hidden;">
       <div class="scroll-divider"></div>
-      <div class="upcoming-header">Upcoming</div>
+      <div class="upcoming-header">Upcoming ⏭️</div>
       <div class="scroll-area">
         <div class="scroll-track" id="scrollTrack"></div>
       </div>
     </div>
-    <div class="empty-msg" id="emptyMsg">No customers waiting</div>
+    <div class="empty-msg" id="emptyMsg">No customers waiting 😴</div>
   </div>
 
   <script>
@@ -389,7 +389,7 @@
           </div>`;
         } else {
           h += `<div class="chair empty">
-            <div class="empty-text">Available</div>
+            <div class="empty-text">Available 🪑</div>
           </div>`;
         }
       }
@@ -397,7 +397,7 @@
 
       // Queue
       const waiting = data.waiting;
-      document.getElementById('queueCount').textContent = waiting.length + ' waiting';
+      document.getElementById('queueCount').textContent = waiting.length + ' waiting ⏳';
 
       const staticList = document.getElementById('staticList');
       const scrollSection = document.getElementById('scrollSection');

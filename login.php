@@ -54,12 +54,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     .brand { text-align: center; margin-bottom: 30px; }
     .brand-icon {
-      width: 60px; height: 60px;
+      width: 84px; height: 84px;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 16px;
+      border-radius: 20px;
       display: inline-flex; align-items: center; justify-content: center;
       margin-bottom: 12px;
-      color: white; font-size: 28px;
+      color: white; font-size: 40px;
     }
     .brand-name { font-size: 22px; font-weight: 800; color: white; }
     .brand-sub {
@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="brand">
       <div class="brand-icon">🔐</div>
       <div class="brand-name">Rivek Men's Salon</div>
-      <div class="brand-sub">Admin / Staff Login</div>
+      <div class="brand-sub">Admin / Staff Login 🔐</div>
     </div>
 
     <?php if ($error): ?>
@@ -105,10 +105,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <form method="POST">
       <div class="form-group">
-        <label for="password">Password</label>
+        <label for="password">Password 🔑</label>
         <input type="password" id="password" name="password" placeholder="Enter password" required autofocus>
       </div>
-      <button type="submit" class="btn-login">Login</button>
+      <button type="submit" class="btn-login">Login 🚪</button>
     </form>
 
     <div class="hint">Admin and Staff can use same URL. Access is role-based by password.</div>
