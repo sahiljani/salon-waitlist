@@ -123,7 +123,6 @@ requireAdmin();
       <button class="btn-dark" onclick="openDbToolsModal()">DB Tools 🗄️</button>
       <a href="staff.php">Staff Dashboard 👥</a>
       <a href="display.php">Queue Display 📺</a>
-      <a href="tel:9601084421">Customer Care ☎️</a>
       <a href="logout.php">Logout</a>
     </div>
   </div>

@@ -400,7 +400,6 @@ requireStaffOrAdmin();
   <div class="header">
     <div class="header-links">
       <a href="display.php" class="header-link">Display</a>
-      <a href="tel:9601084421" class="header-link">Customer Care</a>
       <a href="logout.php" class="header-link">Logout</a>
     </div>
     <h1>Rivek Men's Salon</h1>
