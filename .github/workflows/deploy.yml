@@ -63,8 +63,6 @@ jobs:
       DEV_NAME: ${{ secrets.DEV_NAME }}
       DEV_PASS: ${{ secrets.DEV_PASS }}
       DEV_DEPLOY_PATH: ${{ secrets.DEV_DEPLOY_PATH }}
-      DEV_ADMIN_PASSWORD: ${{ secrets.DEV_ADMIN_PASSWORD }}
-      DEV_STAFF_PASSWORD: ${{ secrets.DEV_STAFF_PASSWORD }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -143,10 +141,6 @@ jobs:
       - name: Upload config.php to dev
         run: |
           sshpass -p "${DEV_PASS}" scp -o StrictHostKeyChecking=no ./config.php "${DEV_NAME}@${DEV_HOST}:${REMOTE_PATH}/config.php"
-
-      - name: Write .env for development
-        run: |
-          sshpass -p "${DEV_PASS}" ssh -o StrictHostKeyChecking=no "${DEV_NAME}@${DEV_HOST}" "printf '%s\n%s\n' 'ADMIN_PASSWORD=${DEV_ADMIN_PASSWORD}' 'STAFF_PASSWORD=${DEV_STAFF_PASSWORD}' > '${REMOTE_PATH}/.env'"
 
       - name: Run migrations on dev
         run: |
