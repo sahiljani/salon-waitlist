@@ -1,5 +1,6 @@
 # Sensitive config (has DB credentials)
 config.php
+.env
 
 # IDE / OS files
 .vscode/
