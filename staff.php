@@ -352,8 +352,7 @@ requireStaffOrAdmin();
     .label-icon-lg { width: 18px; height: 18px; vertical-align: -3px; margin-left: 4px; }
     .pos-overlay { display:none; position:fixed; inset:0; background:rgba(15,23,42,0.58); z-index:2000; align-items:center; justify-content:center; padding:16px; }
     .pos-modal { background:#fff; border-radius:16px; max-width:760px; width:100%; max-height:92vh; overflow:auto; padding:18px; box-shadow:0 25px 60px rgba(2,6,23,0.35); }
-    .pos-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:10px; }
-    .pos-title { font-size:34px; font-weight:800; display:flex; align-items:center; gap:8px; }
+    .pos-head { display:flex; justify-content:flex-end; align-items:center; margin-bottom:6px; gap:10px; }
     .pos-close { border:none; background:#f2f4f7; border-radius:10px; padding:9px 12px; cursor:pointer; font-weight:700; display:flex; align-items:center; gap:6px; }
     .pos-token { font-size:22px; font-weight:700; margin-bottom:12px; }
     .pos-label { font-size:14px; margin:10px 0 8px; font-weight:700; color:#334155; display:flex; align-items:center; gap:6px; }
@@ -365,13 +364,14 @@ requireStaffOrAdmin();
     .pos-btn.active { background:#6366f1; color:#fff; }
     .pos-service-btn { min-height:58px; flex-direction:column; line-height:1.2; gap:2px; }
     .pos-service-btn .price { font-size:24px; font-weight:800; }
+    .pos-service-btn.has-items { background:#e0e7ff; color:#312e81; border:1px solid #a5b4fc; }
     .svc-count { position:absolute; top:6px; right:6px; background:#111827; color:#fff; border-radius:999px; font-size:12px; line-height:1; padding:4px 7px; min-width:22px; text-align:center; }
     .pos-other { display:grid; grid-template-columns:1fr 120px; gap:8px; align-items:end; margin-bottom:12px; }
     .pos-input { width:100%; padding:11px; border:2px solid #e8e8e8; border-radius:10px; font-size:18px; }
     .pos-input:focus { outline:none; border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,0.14); }
-    .sale-items { border:1px solid #eee; border-radius:10px; padding:10px; min-height:64px; margin-bottom:10px; }
-    .sale-row { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid #f4f4f4; gap:8px; }
-    .sale-row:last-child { border-bottom:none; }
+    .sale-items { border:1px solid #e2e8f0; border-radius:12px; padding:12px; min-height:90px; margin-bottom:12px; background:#f8fafc; }
+    .sale-row { display:flex; justify-content:space-between; align-items:center; padding:12px 12px; gap:8px; background:#eef2ff; border:1px solid #c7d2fe; border-radius:12px; margin-bottom:10px; font-size:30px; font-weight:600; }
+    .sale-row:last-child { margin-bottom:0; }
     .sale-remove { border:none; background:#fee2e2; border-radius:6px; padding:5px 8px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
     .pos-adjust { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:8px 0; }
     .pos-pay { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:10px 0; }
@@ -382,7 +382,6 @@ requireStaffOrAdmin();
     .icon-18 { width:18px; height:18px; }
     @media (max-width: 640px) {
       .pos-other { grid-template-columns:1fr; }
-      .pos-title { font-size:24px; }
       .pos-complete { font-size:28px; }
       .pos-grid.services { grid-template-columns:repeat(2,minmax(0,1fr)); }
       .pos-grid.staff { grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -469,7 +468,6 @@ requireStaffOrAdmin();
   <div id="posModal" class="pos-overlay">
     <div class="pos-modal">
       <div class="pos-head">
-        <div class="pos-title">Sale Checkout <i data-lucide="receipt-text" class="icon-18"></i></div>
         <button onclick="closePosModal()" class="pos-close">Close <i data-lucide="x" class="icon-16"></i></button>
       </div>
 
@@ -477,6 +475,10 @@ requireStaffOrAdmin();
 
       <div class="pos-label">Select Staff <i data-lucide="user" class="icon-16"></i></div>
       <div id="staffOptions" class="pos-grid staff"></div>
+
+      <div class="pos-adjust" style="margin-top:4px;">
+        <input id="discountInput" type="number" min="0" step="1" placeholder="Discount (₹)" class="pos-input">
+      </div>
 
       <div class="pos-label">Select Services <i data-lucide="scissors" class="icon-16"></i></div>
       <div id="serviceOptions" class="pos-grid services"></div>
@@ -490,10 +492,6 @@ requireStaffOrAdmin();
       </div>
 
       <div id="saleItems" class="sale-items"></div>
-
-      <div class="pos-adjust">
-        <input id="discountInput" type="number" min="0" step="1" placeholder="Discount" class="pos-input">
-      </div>
 
       <div class="pos-pay">
         <button onclick="setPayment('CASH')" id="payCASH" class="pos-btn pay-btn">Cash <i data-lucide="wallet" class="icon-16"></i></button>
@@ -683,7 +681,7 @@ requireStaffOrAdmin();
 
       const svcWrap = document.getElementById('serviceOptions');
       svcWrap.innerHTML = serviceList.map((svc) => `
-        <button onclick="addServiceLine(${svc.id})" class="pos-btn pos-service-btn">
+        <button onclick="addServiceLine(${svc.id})" class="pos-btn pos-service-btn ${serviceCounts[svc.id] ? 'has-items' : ''}">
           <i data-lucide="${getServiceIcon(svc.name)}" class="icon-16"></i>
           <span>${svc.name}</span>
           <span class="price">₹${Number(svc.price).toFixed(0)}</span>
