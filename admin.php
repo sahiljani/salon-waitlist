@@ -13,6 +13,7 @@ requireAdmin();
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; background: #f4f6fb; color: #222; }
     .header { background: #111827; color: white; padding: 16px 20px; display:flex; justify-content:space-between; align-items:center; }
     .header a { color: white; text-decoration:none; opacity:0.9; margin-left:12px; }
+    .header button { margin-left: 10px; }
     .wrap { max-width: 1100px; margin: 20px auto; padding: 0 12px; display:grid; grid-template-columns:1fr 1fr; gap:16px; }
     .card { background: white; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); padding: 14px; }
     h2 { margin: 0 0 10px; font-size: 18px; }
@@ -25,14 +26,30 @@ requireAdmin();
     .btn-primary { background:#4f46e5; color:white; }
     .btn-danger { background:#ef4444; color:white; }
     .btn-muted { background:#e5e7eb; }
+    .btn-dark { background:#111827; color:white; }
     .toast { position: fixed; right: 16px; bottom: 16px; background: #111; color:white; padding:10px 14px; border-radius:8px; display:none; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 12px; }
+    .modal { width: 100%; max-width: 720px; background: #fff; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); padding: 16px; max-height: 92vh; overflow: auto; }
+    .stats-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+    .stat-box { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px; text-align: center; }
+    .stat-box .v { font-size: 20px; font-weight: 800; }
+    .stat-box .k { font-size: 12px; color: #6b7280; margin-top: 2px; }
+    .table-stats { margin-top: 12px; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+    .table-stats table { width: 100%; border-collapse: collapse; }
+    .table-stats th, .table-stats td { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+    .table-stats tr:last-child td { border-bottom: none; }
+    .steps-box { margin-top: 12px; padding: 10px; background: #f8fafc; border-radius: 10px; border: 1px solid #e5e7eb; font-size: 13px; }
+    .steps-box div { margin-bottom: 6px; }
+    .steps-box div:last-child { margin-bottom: 0; }
     @media (max-width: 900px) { .wrap { grid-template-columns:1fr; } }
+    @media (max-width: 720px) { .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   </style>
 </head>
 <body>
   <div class="header">
     <div><strong>Admin Panel</strong> · Staff & Services Management</div>
     <div>
+      <button class="btn-dark" onclick="openDbToolsModal()">DB Tools</button>
       <a href="staff.php">Staff Dashboard</a>
     </div>
   </div>
@@ -63,6 +80,39 @@ requireAdmin();
         <thead><tr><th>ID</th><th>Name</th><th>Price</th><th>Icon</th><th>Status</th><th>Actions</th></tr></thead>
         <tbody id="serviceTable"></tbody>
       </table>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="dbToolsBackdrop" onclick="closeDbToolsModal(event)">
+    <div class="modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+        <h2 style="margin:0;">Database Tools</h2>
+        <button class="btn-muted" onclick="forceCloseDbToolsModal()">Close</button>
+      </div>
+
+      <p style="margin:10px 0 0;color:#4b5563;font-size:14px;">
+        Run safe migrations only when needed. This will create missing tables and seed defaults if empty.
+      </p>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+        <button class="btn-primary" id="runMigrationBtn" onclick="runMigrations()">Run Migrations</button>
+        <button class="btn-muted" onclick="loadDbStats()">Refresh Stats</button>
+      </div>
+
+      <div id="dbToolsStatus" style="margin-top:10px;font-size:13px;color:#4b5563;">Loading stats...</div>
+
+      <div class="stats-grid" id="tokenStatsGrid"></div>
+
+      <div class="table-stats">
+        <table>
+          <thead>
+            <tr><th>Table</th><th>Exists</th><th>Rows</th></tr>
+          </thead>
+          <tbody id="dbTableStats"></tbody>
+        </table>
+      </div>
+
+      <div class="steps-box" id="migrationSteps" style="display:none;"></div>
     </div>
   </div>
 
@@ -180,6 +230,78 @@ requireAdmin();
         toast('Saved');
         loadServices();
       } catch (e) { toast(e.message); }
+    }
+
+    function renderDbTools(data, message = '') {
+      const tokenStats = data.today_tokens || {};
+      const db = data.db || {};
+      const tables = db.tables || {};
+      const summary = db.summary || {};
+
+      document.getElementById('dbToolsStatus').textContent = message || `Tables ready: ${summary.existing || 0}/${summary.total || 0} · Missing: ${summary.missing || 0}`;
+
+      const tokenGrid = document.getElementById('tokenStatsGrid');
+      tokenGrid.innerHTML = `
+        <div class="stat-box"><div class="v">${tokenStats.total || 0}</div><div class="k">Total</div></div>
+        <div class="stat-box"><div class="v">${tokenStats.waiting || 0}</div><div class="k">Waiting</div></div>
+        <div class="stat-box"><div class="v">${tokenStats.serving || 0}</div><div class="k">Serving</div></div>
+        <div class="stat-box"><div class="v">${tokenStats.done || 0}</div><div class="k">Done</div></div>
+        <div class="stat-box"><div class="v">${tokenStats.noshow || 0}</div><div class="k">No-show</div></div>
+      `;
+
+      const rows = Object.keys(tables).map((name) => {
+        const row = tables[name];
+        return `<tr><td>${name}</td><td>${row.exists ? 'Yes' : 'No'}</td><td>${row.rows || 0}</td></tr>`;
+      }).join('');
+      document.getElementById('dbTableStats').innerHTML = rows || '<tr><td colspan="3">No data</td></tr>';
+    }
+
+    async function loadDbStats() {
+      try {
+        document.getElementById('dbToolsStatus').textContent = 'Loading stats...';
+        const data = await api('admin_db_stats');
+        renderDbTools(data);
+      } catch (e) {
+        document.getElementById('dbToolsStatus').textContent = e.message;
+      }
+    }
+
+    function openDbToolsModal() {
+      document.getElementById('dbToolsBackdrop').style.display = 'flex';
+      document.getElementById('migrationSteps').style.display = 'none';
+      document.getElementById('migrationSteps').innerHTML = '';
+      loadDbStats();
+    }
+
+    function closeDbToolsModal(event) {
+      if (event.target.id === 'dbToolsBackdrop') {
+        forceCloseDbToolsModal();
+      }
+    }
+
+    function forceCloseDbToolsModal() {
+      document.getElementById('dbToolsBackdrop').style.display = 'none';
+    }
+
+    async function runMigrations() {
+      if (!confirm('Run database migrations now?')) return;
+      const btn = document.getElementById('runMigrationBtn');
+      btn.disabled = true;
+      btn.textContent = 'Running...';
+      try {
+        const data = await api('admin_run_migrations', {}, 'POST');
+        renderDbTools(data, 'Migration completed successfully');
+        const stepsBox = document.getElementById('migrationSteps');
+        const steps = (data.steps || []).map((s) => `<div>${s}</div>`).join('');
+        stepsBox.innerHTML = steps || '<div>No migration steps returned</div>';
+        stepsBox.style.display = 'block';
+        toast('Migration complete');
+      } catch (e) {
+        toast(e.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Run Migrations';
+      }
     }
 
     loadStaff();
