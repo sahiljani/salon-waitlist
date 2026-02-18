@@ -1,6 +1,6 @@
 <?php
 require_once 'auth.php';
-requireLogin();
+requireStaffOrAdmin();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -336,27 +336,27 @@ requireLogin();
 <body>
   <div class="header">
     <h1>Rivek Men's Salon</h1>
-    <div style="font-size:13px; opacity:0.8; margin-top:2px;">Staff Dashboard</div>
+    <div style="font-size:13px; opacity:0.8; margin-top:2px;">⚙️</div>
     <div class="stats">
       <div class="stat">
         <div class="stat-value" id="statWaiting">0</div>
-        <div class="stat-label">Waiting</div>
+        <div class="stat-label">⏳</div>
       </div>
       <div class="stat">
         <div class="stat-value" id="statServing">0</div>
-        <div class="stat-label">Serving</div>
+        <div class="stat-label">🪑</div>
       </div>
       <div class="stat">
         <div class="stat-value" id="statDone">0</div>
-        <div class="stat-label">Completed</div>
+        <div class="stat-label">✅</div>
       </div>
       <div class="stat">
         <div class="stat-value" id="statNoShow">0</div>
-        <div class="stat-label">No Show</div>
+        <div class="stat-label">🚫</div>
       </div>
       <div class="stat">
         <div class="stat-value" id="statTotal">0</div>
-        <div class="stat-label">Total</div>
+        <div class="stat-label">📊</div>
       </div>
     </div>
   </div>
@@ -364,9 +364,9 @@ requireLogin();
   <div class="main">
     <!-- NEXT Button -->
     <div class="action-bar">
-      <button class="btn-next" id="btnNext" onclick="callNext()">CALL NEXT CUSTOMER</button>
+      <button class="btn-next" id="btnNext" onclick="callNext()">🔔 ➡️</button>
       <div class="chairs-label">
-        <span>Chairs:</span>
+        <span>🪑</span>
         <div class="chair-dots">
           <div class="chair-dot" id="dot0"></div>
           <div class="chair-dot" id="dot1"></div>
@@ -378,7 +378,7 @@ requireLogin();
 
     <!-- 4 Chair Cards -->
     <div class="serving-section">
-      <h2>Now Serving</h2>
+      <h2>🪑</h2>
       <div class="serving-grid" id="servingGrid">
         <!-- Filled by JS -->
       </div>
@@ -387,30 +387,76 @@ requireLogin();
     <!-- Waiting Queue + Add Token -->
     <div class="bottom-section">
       <div class="card">
-        <h2>Waiting Queue</h2>
+        <h2>⏳</h2>
         <div class="queue-list" id="queueList">
-          <div class="empty-message">No customers waiting</div>
+          <div class="empty-message">😴</div>
         </div>
       </div>
 
       <div class="card">
-        <h2>Add Customer</h2>
+        <h2>➕</h2>
         <div class="add-form-group">
-          <label>Customer Name</label>
-          <input type="text" id="manualName" placeholder="Enter full name" autocomplete="off">
+          <label>👤</label>
+          <input type="text" id="manualName" placeholder="👤" autocomplete="off">
         </div>
         <div class="add-form-group">
-          <label>Phone Number</label>
-          <input type="tel" id="manualPhone" placeholder="Enter phone number" autocomplete="off">
+          <label>📱</label>
+          <input type="tel" id="manualPhone" placeholder="📱" autocomplete="off">
         </div>
-        <button class="btn-add" onclick="addManualToken()">Add to Queue</button>
+        <button class="btn-add" onclick="addManualToken()">➕ ⏳</button>
       </div>
+    </div>
+  </div>
+
+  <div id="posModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:2000;align-items:center;justify-content:center;padding:16px;">
+    <div style="background:#fff;border-radius:14px;max-width:700px;width:100%;max-height:92vh;overflow:auto;padding:18px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:22px;font-weight:800;">🧾</div>
+        <button onclick="closePosModal()" style="border:none;background:#f2f2f2;border-radius:8px;padding:8px 12px;cursor:pointer;">✖️</button>
+      </div>
+
+      <div id="posTokenInfo" style="font-size:18px;font-weight:700;margin-bottom:10px;"></div>
+
+      <div style="font-size:14px;margin:8px 0;">👤</div>
+      <div id="staffOptions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px;"></div>
+
+      <div style="font-size:14px;margin:8px 0;">✂️</div>
+      <div id="serviceOptions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px;"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 120px;gap:8px;align-items:end;margin-bottom:12px;">
+        <div>
+          <div style="font-size:14px;margin:8px 0;">➕</div>
+          <input id="otherAmount" type="number" min="1" step="1" placeholder="₹" style="width:100%;padding:10px;border:2px solid #e8e8e8;border-radius:10px;font-size:18px;">
+        </div>
+        <button onclick="addOtherLine()" style="border:none;background:#222;color:#fff;border-radius:10px;padding:12px 10px;font-weight:700;cursor:pointer;">➕</button>
+      </div>
+
+      <div id="saleItems" style="border:1px solid #eee;border-radius:10px;padding:10px;min-height:60px;margin-bottom:10px;"></div>
+
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0;">
+        <input id="discountInput" type="number" min="0" step="1" placeholder="🏷️" style="width:100%;padding:10px;border:2px solid #e8e8e8;border-radius:10px;font-size:18px;">
+        <input id="taxInput" type="number" min="0" step="1" placeholder="🧾" style="width:100%;padding:10px;border:2px solid #e8e8e8;border-radius:10px;font-size:18px;">
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0;">
+        <button onclick="setPayment('CASH')" id="payCASH" style="border:none;background:#f3f3f3;border-radius:10px;padding:10px;cursor:pointer;font-weight:700;">💵</button>
+        <button onclick="setPayment('UPI')" id="payUPI" style="border:none;background:#f3f3f3;border-radius:10px;padding:10px;cursor:pointer;font-weight:700;">📱</button>
+        <button onclick="setPayment('CARD')" id="payCARD" style="border:none;background:#f3f3f3;border-radius:10px;padding:10px;cursor:pointer;font-weight:700;">💳</button>
+      </div>
+
+      <div id="posTotals" style="font-size:22px;font-weight:800;margin:10px 0;">₹0</div>
+
+      <button id="completeSaleBtn" onclick="saveSaleAndDone()" style="width:100%;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border-radius:12px;padding:16px;font-size:22px;font-weight:800;cursor:pointer;">✅</button>
     </div>
   </div>
 
   <div class="toast" id="toast"></div>
 
   <script>
+    let staffList = [];
+    let serviceList = [];
+    let currentSale = { token: null, staffId: null, items: [], paymentMethod: 'CASH' };
+
     function showToast(message, type = '') {
       const toast = document.getElementById('toast');
       toast.textContent = message;
@@ -431,16 +477,16 @@ requireLogin();
           html += `
             <div class="chair-card occupied">
               <div class="chair-header">
-                <span class="chair-number">Chair ${i + 1}</span>
-                <span class="chair-status serving">Serving</span>
+                <span class="chair-number">🪑 ${i + 1}</span>
+                <span class="chair-status serving">🟢</span>
               </div>
               <div class="chair-token">${person.formatted}</div>
               <div class="chair-name">${person.name}</div>
-              <div class="chair-phone">${person.phone || '-'}</div>
+              <div class="chair-phone">📱 ${person.phone || '-'}</div>
               <div class="chair-actions">
-                <button class="btn-sm btn-done" onclick="markDone(${person.id})">COMPLETED</button>
+                <button class="btn-sm btn-done" onclick="openPosModal(${person.id})">✅</button>
                 <button class="btn-sm btn-requeue" onclick="backToQueue(${person.id})">BACK TO QUEUE</button>
-                <button class="btn-sm btn-noshow" onclick="markNoShow(${person.id})">NO SHOW</button>
+                <button class="btn-sm btn-noshow" onclick="markNoShow(${person.id})">🚫</button>
               </div>
             </div>
           `;
@@ -449,10 +495,10 @@ requireLogin();
           html += `
             <div class="chair-card">
               <div class="chair-header">
-                <span class="chair-number">Chair ${i + 1}</span>
-                <span class="chair-status available">Available</span>
+                <span class="chair-number">🪑 ${i + 1}</span>
+                <span class="chair-status available">⚪</span>
               </div>
-              <div class="chair-empty">Empty</div>
+              <div class="chair-empty">⭕</div>
             </div>
           `;
         }
@@ -472,17 +518,17 @@ requireLogin();
       // Queue list
       const queueList = document.getElementById('queueList');
       if (data.waiting.length === 0) {
-        queueList.innerHTML = '<div class="empty-message">No customers waiting</div>';
+        queueList.innerHTML = '<div class="empty-message">😴</div>';
       } else {
         queueList.innerHTML = data.waiting.map((item, index) => `
           <div class="queue-item">
             <div class="token">${item.formatted}</div>
             <div class="info">
               <div class="name">${item.name}</div>
-              <div class="phone">${item.phone || ''}</div>
+              <div class="phone">📱 ${item.phone || ''}</div>
             </div>
             <div class="position">#${index + 1}</div>
-            <button class="btn-call" onclick="callSpecific(${item.id})">CALL</button>
+            <button class="btn-call" onclick="callSpecific(${item.id})">🔔</button>
           </div>
         `).join('');
       }
@@ -522,19 +568,178 @@ requireLogin();
       } catch (err) { showToast('Failed to call next', 'error'); }
     }
 
-    async function markDone(id) {
+
+
+    async function loadPosData() {
       try {
-        const res = await fetch('api.php?action=done', {
+        const [staffRes, serviceRes] = await Promise.all([
+          fetch('api.php?action=get_staff'),
+          fetch('api.php?action=get_services')
+        ]);
+        const staffData = await staffRes.json();
+        const serviceData = await serviceRes.json();
+        staffList = staffData.staff || [];
+        serviceList = serviceData.services || [];
+      } catch (err) {
+        showToast('POS load failed', 'error');
+      }
+    }
+
+    function closePosModal() {
+      document.getElementById('posModal').style.display = 'none';
+      currentSale = { token: null, staffId: null, items: [], paymentMethod: 'CASH' };
+    }
+
+    function setPayment(method) {
+      currentSale.paymentMethod = method;
+      ['CASH', 'UPI', 'CARD'].forEach((m) => {
+        const btn = document.getElementById('pay' + m);
+        btn.style.background = m === method ? '#22c55e' : '#f3f3f3';
+        btn.style.color = m === method ? '#fff' : '#111';
+      });
+    }
+
+    function renderPos() {
+      const staffWrap = document.getElementById('staffOptions');
+      staffWrap.innerHTML = staffList.map((st) => `
+        <button onclick="selectStaff(${st.id})" style="border:none;border-radius:10px;padding:10px;cursor:pointer;font-size:18px;background:${currentSale.staffId === st.id ? '#6366f1' : '#f3f3f3'};color:${currentSale.staffId === st.id ? '#fff' : '#111'};">${st.icon || '👤'} ${st.name}</button>
+      `).join('');
+
+      const svcWrap = document.getElementById('serviceOptions');
+      svcWrap.innerHTML = serviceList.map((svc) => `
+        <button onclick="addServiceLine(${svc.id})" style="border:none;border-radius:10px;padding:10px;cursor:pointer;font-size:16px;background:#f3f3f3;">${svc.icon || '✂️'} ${svc.name}<br><b>₹${Number(svc.price).toFixed(0)}</b></button>
+      `).join('');
+
+      const lines = document.getElementById('saleItems');
+      if (currentSale.items.length === 0) {
+        lines.innerHTML = '🧾';
+      } else {
+        lines.innerHTML = currentSale.items.map((line, idx) => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f4f4f4;">
+            <div>${line.icon || '•'} ${line.item_name}</div>
+            <div><b>₹${Number(line.amount).toFixed(0)}</b> <button onclick="removeLine(${idx})" style="border:none;background:#fee2e2;border-radius:6px;padding:4px 8px;cursor:pointer;">🗑️</button></div>
+          </div>
+        `).join('');
+      }
+
+      const subtotal = currentSale.items.reduce((sum, item) => sum + Number(item.amount), 0);
+      const discount = Number(document.getElementById('discountInput').value || 0);
+      const tax = Number(document.getElementById('taxInput').value || 0);
+      const total = Math.max(0, subtotal - discount + tax);
+      document.getElementById('posTotals').textContent = `₹${total.toFixed(0)}`;
+      setPayment(currentSale.paymentMethod);
+    }
+
+    function selectStaff(staffId) {
+      currentSale.staffId = staffId;
+      renderPos();
+    }
+
+    function addServiceLine(serviceId) {
+      const svc = serviceList.find((s) => Number(s.id) === Number(serviceId));
+      if (!svc) return;
+      currentSale.items.push({
+        service_id: Number(svc.id),
+        item_name: svc.name,
+        qty: 1,
+        unit_price: Number(svc.price),
+        amount: Number(svc.price),
+        icon: svc.icon || '✂️'
+      });
+      renderPos();
+    }
+
+    function addOtherLine() {
+      const amount = Number(document.getElementById('otherAmount').value || 0);
+      if (amount <= 0) {
+        showToast('Enter ₹', 'error');
+        return;
+      }
+      currentSale.items.push({
+        item_name: 'Other',
+        qty: 1,
+        unit_price: amount,
+        amount,
+        icon: '➕'
+      });
+      document.getElementById('otherAmount').value = '';
+      renderPos();
+    }
+
+    function removeLine(index) {
+      currentSale.items.splice(index, 1);
+      renderPos();
+    }
+
+    async function openPosModal(tokenId) {
+      const res = await fetch('api.php?action=get_queue');
+      const data = await res.json();
+      const token = (data.serving || []).find((row) => Number(row.id) === Number(tokenId));
+      if (!token) {
+        showToast('Token missing', 'error');
+        return;
+      }
+      currentSale = { token, staffId: null, items: [], paymentMethod: 'CASH' };
+      document.getElementById('posTokenInfo').textContent = `${token.formatted} • ${token.name}`;
+      document.getElementById('discountInput').value = '';
+      document.getElementById('taxInput').value = '';
+      document.getElementById('posModal').style.display = 'flex';
+      renderPos();
+    }
+
+    async function saveSaleAndDone() {
+      if (!currentSale.token) {
+        showToast('No token', 'error');
+        return;
+      }
+      if (!currentSale.staffId) {
+        showToast('Select 👤', 'error');
+        return;
+      }
+      if (currentSale.items.length === 0) {
+        showToast('Add ✂️', 'error');
+        return;
+      }
+
+      const discount = Number(document.getElementById('discountInput').value || 0);
+      const tax = Number(document.getElementById('taxInput').value || 0);
+
+      try {
+        const saleRes = await fetch('api.php?action=create_sale', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id })
+          body: JSON.stringify({
+            token_id: currentSale.token.id,
+            staff_id: currentSale.staffId,
+            items: currentSale.items,
+            discount,
+            tax,
+            payment_method: currentSale.paymentMethod
+          })
         });
-        const data = await res.json();
-        if (res.ok) {
-          showToast('Customer completed', 'success');
-          fetchQueue();
-        } else { showToast(data.error, 'error'); }
-      } catch (err) { showToast('Failed', 'error'); }
+        const saleData = await saleRes.json();
+        if (!saleRes.ok) {
+          showToast(saleData.error || 'Sale failed', 'error');
+          return;
+        }
+
+        const doneRes = await fetch('api.php?action=done', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: currentSale.token.id, sale_id: saleData.sale_id })
+        });
+        const doneData = await doneRes.json();
+        if (!doneRes.ok) {
+          showToast(doneData.error || 'Complete failed', 'error');
+          return;
+        }
+
+        showToast('✅', 'success');
+        closePosModal();
+        fetchQueue();
+      } catch (err) {
+        showToast('Failed', 'error');
+      }
     }
 
     async function markNoShow(id) {
@@ -587,7 +792,7 @@ requireLogin();
       const phone = document.getElementById('manualPhone').value.trim();
 
       if (!name || !phone) {
-        showToast('Please enter name and phone', 'error');
+        showToast('👤 + 📱', 'error');
         return;
       }
 
@@ -604,7 +809,7 @@ requireLogin();
           document.getElementById('manualPhone').value = '';
           fetchQueue();
         } else { showToast(data.error, 'error'); }
-      } catch (err) { showToast('Failed to create token', 'error'); }
+      } catch (err) { showToast('❌', 'error'); }
     }
 
     // Enter key for add form
@@ -612,6 +817,7 @@ requireLogin();
       if (e.key === 'Enter') addManualToken();
     });
 
+    loadPosData();
     fetchQueue();
     setInterval(fetchQueue, 3000);
   </script>
