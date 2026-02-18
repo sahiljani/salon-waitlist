@@ -1,14 +1,46 @@
-name: Deploy to FTP
+name: CI/CD
 
 on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+      - development
   push:
     branches:
       - main
+      - development
 
 jobs:
-  deploy:
-    name: Deploy to Production
+  ci:
+    name: PHP Lint
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+
+      - name: Lint PHP files
+        run: |
+          set -e
+          files=$(find . -name "*.php" -not -path "./.git/*")
+          if [ -z "$files" ]; then
+            echo "No PHP files found."
+            exit 0
+          fi
+          for f in $files; do
+            php -l "$f"
+          done
+
+  deploy-production:
+    name: Deploy to Production (FTP)
+    runs-on: ubuntu-latest
+    needs: ci
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -20,3 +52,97 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: /public_html/
+
+  deploy-development:
+    name: Deploy to Development (SSH)
+    runs-on: ubuntu-latest
+    needs: ci
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/development') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/development')
+    env:
+      DEV_HOST: ${{ secrets.DEV_HOST }}
+      DEV_NAME: ${{ secrets.DEV_NAME }}
+      DEV_PASS: ${{ secrets.DEV_PASS }}
+      DEV_DEPLOY_PATH: ${{ secrets.DEV_DEPLOY_PATH }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install rsync + sshpass
+        run: sudo apt-get update && sudo apt-get install -y rsync sshpass
+
+      - name: Set remote path
+        run: |
+          if [ -z "${DEV_DEPLOY_PATH}" ]; then
+            echo "REMOTE_PATH=/home/janisahil-salon/htdocs/salon.janisahil.com" >> "$GITHUB_ENV"
+          else
+            echo "REMOTE_PATH=${DEV_DEPLOY_PATH}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Ensure target directory exists
+        run: |
+          sshpass -p "${DEV_PASS}" ssh -o StrictHostKeyChecking=no "${DEV_NAME}@${DEV_HOST}" "mkdir -p '${REMOTE_PATH}'"
+
+      - name: Sync files to dev server
+        run: |
+          sshpass -p "${DEV_PASS}" rsync -az --delete \
+            --exclude ".git/" \
+            --exclude ".github/" \
+            --exclude ".claude/" \
+            --exclude ".gitignore" \
+            --exclude "config.php" \
+            "${GITHUB_WORKSPACE}/" "${DEV_NAME}@${DEV_HOST}:${REMOTE_PATH}/"
+
+      - name: Build config.php from dev secrets
+        run: |
+          python3 - <<'PY'
+          import os
+
+          def php_single_quote(value: str) -> str:
+            return value.replace("\\", "\\\\").replace("'", "\\'")
+
+          host = php_single_quote(os.environ["DEV_HOST"])
+          name = php_single_quote(os.environ["DEV_NAME"])
+          pwd = php_single_quote(os.environ["DEV_PASS"])
+
+          config = f"""<?php
+define('DB_HOST', '{host}');
+define('DB_NAME', '{name}');
+define('DB_USER', '{name}');
+define('DB_PASS', '{pwd}');
+
+function getDB() {{
+    try {{
+        $pdo = new PDO(
+            "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
+            DB_USER,
+            DB_PASS,
+            [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+            ]
+        );
+        return $pdo;
+    }} catch (PDOException $e) {{
+        die(json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]));
+    }}
+}}
+
+function getToday() {{
+    return date('Y-m-d');
+}}
+
+function formatToken($num) {{
+    return 'T-' . str_pad($num, 3, '0', STR_PAD_LEFT);
+}}
+"""
+          with open("config.php", "w", encoding="utf-8", newline="\n") as f:
+            f.write(config)
+          PY
+
+      - name: Upload config.php to dev
+        run: |
+          sshpass -p "${DEV_PASS}" scp -o StrictHostKeyChecking=no ./config.php "${DEV_NAME}@${DEV_HOST}:${REMOTE_PATH}/config.php"
+
+      - name: Run migrations on dev
+        run: |
+          sshpass -p "${DEV_PASS}" ssh -o StrictHostKeyChecking=no "${DEV_NAME}@${DEV_HOST}" "cd '${REMOTE_PATH}' && php migrations.php || true"
