@@ -511,6 +511,28 @@ requireStaffOrAdmin();
     let staffList = [];
     let serviceList = [];
     let currentSale = { token: null, staffId: null, items: [], paymentMethod: 'CASH' };
+    const SOUND_ENABLED_KEY = 'salon_sfx_enabled';
+    let soundEnabled = localStorage.getItem(SOUND_ENABLED_KEY) !== '0';
+    const sounds = {
+      select: new Audio('assets/audio/ui-select.mp3'),
+      serviceAdd: new Audio('assets/audio/select-service.mp3'),
+      remove: new Audio('assets/audio/remove-item.mp3'),
+      notify: new Audio('assets/audio/notify.mp3')
+    };
+    Object.values(sounds).forEach((audio) => {
+      audio.preload = 'auto';
+      audio.volume = 0.6;
+    });
+
+    function playSound(name) {
+      if (!soundEnabled) return;
+      const audio = sounds[name];
+      if (!audio) return;
+      try {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+      } catch (e) {}
+    }
 
     function showToast(message, type = '') {
       const toast = document.getElementById('toast');
@@ -618,6 +640,7 @@ requireStaffOrAdmin();
         const data = await res.json();
         if (res.ok) {
           showToast(`Now serving ${data.formatted} - ${data.name}`, 'success');
+          playSound('notify');
           fetchQueue();
         } else {
           showToast(data.error, 'error');
@@ -653,6 +676,7 @@ requireStaffOrAdmin();
         const btn = document.getElementById('pay' + m);
         btn.classList.toggle('active', m === method);
       });
+      playSound('select');
     }
 
     function getServiceIcon(serviceName) {
@@ -715,6 +739,7 @@ requireStaffOrAdmin();
     function selectStaff(staffId) {
       currentSale.staffId = staffId;
       renderPos();
+      playSound('select');
     }
 
     function addServiceLine(serviceId) {
@@ -728,6 +753,7 @@ requireStaffOrAdmin();
         amount: Number(svc.price)
       });
       renderPos();
+      playSound('serviceAdd');
     }
 
     function addOtherLine() {
@@ -749,6 +775,7 @@ requireStaffOrAdmin();
     function removeLine(index) {
       currentSale.items.splice(index, 1);
       renderPos();
+      playSound('remove');
     }
 
     async function openPosModal(tokenId) {
@@ -814,6 +841,7 @@ requireStaffOrAdmin();
         }
 
         showToast('Sale completed', 'success');
+        playSound('notify');
         closePosModal();
         fetchQueue();
       } catch (err) {
@@ -861,6 +889,7 @@ requireStaffOrAdmin();
         const data = await res.json();
         if (res.ok) {
           showToast(`Now serving ${data.formatted} - ${data.name}`, 'success');
+          playSound('notify');
           fetchQueue();
         } else { showToast(data.error, 'error'); }
       } catch (err) { showToast('Failed to call customer', 'error'); }
