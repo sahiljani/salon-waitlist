@@ -146,11 +146,8 @@ jobs:
 
       - name: Write .env for development
         run: |
-          sshpass -p "${DEV_PASS}" ssh -o StrictHostKeyChecking=no "${DEV_NAME}@${DEV_HOST}" "cat > '${REMOTE_PATH}/.env' <<EOF
-ADMIN_PASSWORD=${DEV_ADMIN_PASSWORD}
-STAFF_PASSWORD=${DEV_STAFF_PASSWORD}
-EOF"
+          sshpass -p "${DEV_PASS}" ssh -o StrictHostKeyChecking=no "${DEV_NAME}@${DEV_HOST}" "printf '%s\n%s\n' 'ADMIN_PASSWORD=${DEV_ADMIN_PASSWORD}' 'STAFF_PASSWORD=${DEV_STAFF_PASSWORD}' > '${REMOTE_PATH}/.env'"
 
       - name: Run migrations on dev
         run: |
-          sshpass -p "${DEV_PASS}" ssh -o StrictHostKeyChecking=no "${DEV_NAME}@${DEV_HOST}" "cd '${REMOTE_PATH}' && php migrations.php || true"
+          sshpass -p "${DEV_PASS}" ssh -o StrictHostKeyChecking=no "${DEV_NAME}@${DEV_HOST}" "cd '${REMOTE_PATH}' && php db_setup.php || true"
