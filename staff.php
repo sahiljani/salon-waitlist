@@ -47,6 +47,11 @@ requireStaffOrAdmin();
       border-radius: 10px;
     }
     .header-link:hover { background: rgba(255,255,255,0.26); }
+    .header-link.btn-like {
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
 
     .header h1 { font-size: 22px; }
 
@@ -405,6 +410,19 @@ requireStaffOrAdmin();
     .pay-btn.active { background:#22c55e; color:#fff; }
     .pos-total { font-size:22px; font-weight:800; margin:10px 0; }
     .pos-complete { width:100%; border:none; background:linear-gradient(135deg,#22c55e,#16a34a); color:#fff; border-radius:12px; padding:16px; font-size:32px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .help-overlay { display:none; position:fixed; inset:0; background:rgba(15,23,42,0.62); z-index:2600; align-items:center; justify-content:center; padding:16px; }
+    .help-modal { width:100%; max-width:860px; max-height:92vh; overflow:auto; background:#ffffff; border-radius:18px; padding:20px; box-shadow:0 25px 60px rgba(2,6,23,0.4); }
+    .help-head { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; }
+    .help-title { font-size:34px; font-weight:900; color:#111827; }
+    .help-subtitle { font-size:18px; color:#475569; margin:0 0 12px; }
+    .help-grid { display:grid; grid-template-columns:1fr; gap:10px; }
+    .help-row { border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc; padding:12px; display:flex; align-items:center; gap:16px; }
+    .help-keys { display:flex; align-items:center; gap:8px; flex-wrap:wrap; min-width:240px; }
+    .help-plus { color:#64748b; font-weight:800; font-size:20px; }
+    .keyimg-wrap { display:inline-flex; align-items:center; gap:4px; border:1px solid #cbd5e1; border-radius:8px; padding:2px 6px; background:#0f172a; color:#fff; font-weight:800; font-size:14px; min-height:34px; }
+    .keyimg { width:26px; height:26px; display:block; }
+    .help-text { font-size:23px; font-weight:800; color:#0f172a; }
+    .help-note { margin-top:10px; font-size:16px; color:#475569; }
     .icon-16 { width:16px; height:16px; }
     .icon-18 { width:18px; height:18px; }
     @media (max-width: 640px) {
@@ -413,12 +431,17 @@ requireStaffOrAdmin();
       .pos-grid.services { grid-template-columns:repeat(2,minmax(0,1fr)); }
       .pos-grid.staff { grid-template-columns:repeat(2,minmax(0,1fr)); }
       .pos-pay { grid-template-columns:1fr; }
+      .help-title { font-size:28px; }
+      .help-text { font-size:20px; }
+      .help-row { flex-direction:column; align-items:flex-start; }
+      .help-keys { min-width:0; }
     }
   </style>
 </head>
 <body>
   <div class="header">
     <div class="header-links">
+      <button type="button" class="header-link btn-like" onclick="openShortcutsModal()">Shortcuts</button>
       <a href="display.php" class="header-link">Display</a>
       <a href="logout.php" class="header-link">Logout</a>
     </div>
@@ -535,6 +558,55 @@ requireStaffOrAdmin();
     </div>
   </div>
 
+  <div id="shortcutsModal" class="help-overlay" onclick="closeShortcutsModal(event)">
+    <div class="help-modal">
+      <div class="help-head">
+        <div class="help-title">Keyboard Shortcuts</div>
+        <button class="pos-close" type="button" onclick="forceCloseShortcutsModal()">Close</button>
+      </div>
+      <p class="help-subtitle">Use these keys to work faster on the staff dashboard.</p>
+      <div class="help-grid">
+        <div class="help-row">
+          <div class="help-keys">
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/ctrl.svg" alt="Ctrl">Ctrl</span>
+            <span class="help-plus">+</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/backspace.svg" alt="Backspace">Backspace</span>
+          </div>
+          <div class="help-text">Add Walk-in</div>
+        </div>
+        <div class="help-row">
+          <div class="help-keys">
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/space.svg" alt="Space">Space</span>
+          </div>
+          <div class="help-text">Call Next</div>
+        </div>
+        <div class="help-row">
+          <div class="help-keys">
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/alt.svg" alt="Alt">Alt</span>
+            <span class="help-plus">+</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/1.svg" alt="1">1-9</span>
+          </div>
+          <div class="help-text">In POS modal: Select Staff by order</div>
+        </div>
+        <div class="help-row">
+          <div class="help-keys">
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/shift.svg" alt="Shift">Shift</span>
+            <span class="help-plus">+</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/1.svg" alt="1">1-9</span>
+          </div>
+          <div class="help-text">In POS modal: Add Service by order</div>
+        </div>
+        <div class="help-row">
+          <div class="help-keys">
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/tab.svg" alt="Tab">Tab</span>
+          </div>
+          <div class="help-text">In POS modal: Move to next field</div>
+        </div>
+      </div>
+      <div class="help-note">Tip: Use Shift + Tab to move backwards in modal fields.</div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script>
@@ -636,6 +708,24 @@ requireStaffOrAdmin();
 
     function isPosModalOpen() {
       return document.getElementById('posModal').style.display === 'flex';
+    }
+
+    function isShortcutsModalOpen() {
+      return document.getElementById('shortcutsModal').style.display === 'flex';
+    }
+
+    function openShortcutsModal() {
+      document.getElementById('shortcutsModal').style.display = 'flex';
+    }
+
+    function closeShortcutsModal(event) {
+      if (event.target.id === 'shortcutsModal') {
+        forceCloseShortcutsModal();
+      }
+    }
+
+    function forceCloseShortcutsModal() {
+      document.getElementById('shortcutsModal').style.display = 'none';
     }
 
     function isEditableTarget(target) {
@@ -1116,6 +1206,14 @@ requireStaffOrAdmin();
     });
 
     document.addEventListener('keydown', (e) => {
+      if (isShortcutsModalOpen()) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          forceCloseShortcutsModal();
+        }
+        return;
+      }
+
       if (handleModalDigitShortcuts(e)) return;
 
       if (isPosModalOpen() && e.key === 'Tab') {

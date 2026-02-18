@@ -40,6 +40,22 @@ requireAdmin();
     .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
     .header a { color: white; text-decoration:none; opacity:0.95; padding: 8px 10px; border-radius: 10px; transition: background 0.2s; }
     .header a:hover { background: rgba(255,255,255,0.12); }
+    .header-icon-btn {
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: 16px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+    }
+    .header-icon-btn:hover { background: rgba(255,255,255,0.25); transform: translateY(-1px); }
     .wrap { max-width: 1160px; margin: 24px auto; padding: 0 14px 20px; display:grid; grid-template-columns:1fr 1fr; gap:18px; }
     .card { background: var(--card); border-radius: 16px; box-shadow: 0 10px 30px rgba(15,23,42,0.08); padding: 16px; border: 1px solid #edf1f7; }
     .card-wide { grid-column: 1 / -1; }
@@ -63,6 +79,17 @@ requireAdmin();
     .toast { position: fixed; right: 16px; bottom: 16px; background: #111; color:white; padding:10px 14px; border-radius:8px; display:none; }
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 12px; }
     .modal { width: 100%; max-width: 720px; background: #fff; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); padding: 16px; max-height: 92vh; overflow: auto; }
+    .help-modal { max-width: 860px; border-radius: 16px; }
+    .help-title { margin: 0; font-size: 34px; }
+    .help-subtitle { margin: 10px 0 14px; font-size: 18px; color: #475569; }
+    .help-grid { display:grid; grid-template-columns:1fr; gap:10px; }
+    .help-row { border:1px solid #e2e8f0; border-radius:12px; padding:12px; background:#f8fafc; display:flex; align-items:center; gap:16px; }
+    .help-keys { display:flex; align-items:center; gap:8px; flex-wrap:wrap; min-width:240px; }
+    .help-plus { color:#64748b; font-weight:800; font-size:20px; }
+    .keyimg-wrap { display:inline-flex; align-items:center; gap:4px; border:1px solid #cbd5e1; border-radius:8px; padding:2px 6px; background:#0f172a; color:#fff; font-weight:800; font-size:14px; min-height:34px; }
+    .keyimg { width:26px; height:26px; display:block; }
+    .help-text { font-size:23px; font-weight:800; color:#0f172a; }
+    .help-note { margin-top:12px; padding:10px; border:1px solid #dbeafe; background:#eff6ff; border-radius:10px; color:#1e3a8a; font-size:16px; }
     .stats-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
     .stat-box { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px; text-align: center; }
     .stat-box .v { font-size: 20px; font-weight: 800; }
@@ -82,6 +109,11 @@ requireAdmin();
       .header { flex-direction: column; align-items: stretch; }
       .header-actions { justify-content: flex-start; }
       .header a, .header .btn-dark { width: 100%; text-align: center; }
+      .header-icon-btn { width: 100%; border-radius: 10px; height: auto; padding: 10px 12px; font-size: 14px; }
+      .help-title { font-size: 28px; }
+      .help-text { font-size: 19px; }
+      .help-row { flex-direction: column; align-items: flex-start; }
+      .help-keys { min-width: 0; }
       .row { grid-template-columns:1fr; }
       .filters { grid-template-columns:1fr; }
       .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -123,6 +155,7 @@ requireAdmin();
       <button class="btn-dark" onclick="openDbToolsModal()">DB Tools 🗄️</button>
       <a href="staff.php">Staff Dashboard 👥</a>
       <a href="display.php">Queue Display 📺</a>
+      <button type="button" class="header-icon-btn" onclick="openAdminInfoModal()" title="Staff Shortcuts">👥</button>
       <a href="logout.php">Logout</a>
     </div>
   </div>
@@ -222,6 +255,58 @@ requireAdmin();
       </div>
 
       <div class="steps-box" id="migrationSteps" style="display:none;"></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="adminInfoBackdrop" onclick="closeAdminInfoModal(event)">
+    <div class="modal help-modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+        <h2 class="help-title">Staff Keyboard Guide</h2>
+        <button class="btn-muted" onclick="forceCloseAdminInfoModal()">Close</button>
+      </div>
+      <p class="help-subtitle">Clear key mapping for the staff workflow. Share this with team members.</p>
+
+      <div class="help-grid">
+        <div class="help-row">
+          <div class="help-keys">
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/ctrl.svg" alt="Ctrl">Ctrl</span>
+            <span class="help-plus">+</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/backspace.svg" alt="Backspace">Backspace</span>
+          </div>
+          <div class="help-text">Add Walk-in</div>
+        </div>
+        <div class="help-row">
+          <div class="help-keys">
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/space.svg" alt="Space">Space</span>
+          </div>
+          <div class="help-text">Call Next</div>
+        </div>
+        <div class="help-row">
+          <div class="help-keys">
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/alt.svg" alt="Alt">Alt</span>
+            <span class="help-plus">+</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/1.svg" alt="1">1-9</span>
+          </div>
+          <div class="help-text">In POS modal: Select Staff by order</div>
+        </div>
+        <div class="help-row">
+          <div class="help-keys">
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/shift.svg" alt="Shift">Shift</span>
+            <span class="help-plus">+</span>
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/1.svg" alt="1">1-9</span>
+          </div>
+          <div class="help-text">In POS modal: Add Service by order</div>
+        </div>
+        <div class="help-row">
+          <div class="help-keys">
+            <span class="keyimg-wrap"><img class="keyimg" src="https://raw.githubusercontent.com/IvanMathy/Keymages/main/out/windows/dark/large/tab.svg" alt="Tab">Tab</span>
+          </div>
+          <div class="help-text">In POS modal: Next field (Shift + Tab = previous)</div>
+        </div>
+      </div>
+      <div class="help-note">
+        Location: Staff dashboard page. The modal-only keys work only when POS modal is open.
+      </div>
     </div>
   </div>
 
@@ -433,6 +518,20 @@ requireAdmin();
       document.getElementById('dbToolsBackdrop').style.display = 'none';
     }
 
+    function openAdminInfoModal() {
+      document.getElementById('adminInfoBackdrop').style.display = 'flex';
+    }
+
+    function closeAdminInfoModal(event) {
+      if (event.target.id === 'adminInfoBackdrop') {
+        forceCloseAdminInfoModal();
+      }
+    }
+
+    function forceCloseAdminInfoModal() {
+      document.getElementById('adminInfoBackdrop').style.display = 'none';
+    }
+
     async function runMigrations() {
       if (!confirm('Run database migrations now?')) return;
       const btn = document.getElementById('runMigrationBtn');
@@ -458,6 +557,9 @@ requireAdmin();
     loadServices();
     document.getElementById('salesDate').value = new Date().toISOString().slice(0, 10);
     loadSalesStaffFilter().then(loadSalesReport);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') forceCloseAdminInfoModal();
+    });
   </script>
 </body>
 </html>
