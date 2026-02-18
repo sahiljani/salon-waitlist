@@ -104,37 +104,35 @@ jobs:
           name = php_single_quote(os.environ["DEV_NAME"])
           pwd = php_single_quote(os.environ["DEV_PASS"])
 
-          config = f"""<?php
-define('DB_HOST', '{host}');
-define('DB_NAME', '{name}');
-define('DB_USER', '{name}');
-define('DB_PASS', '{pwd}');
-
-function getDB() {{
-    try {{
-        $pdo = new PDO(
-            "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
-            DB_USER,
-            DB_PASS,
-            [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-            ]
-        );
-        return $pdo;
-    }} catch (PDOException $e) {{
-        die(json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]));
-    }}
-}}
-
-function getToday() {{
-    return date('Y-m-d');
-}}
-
-function formatToken($num) {{
-    return 'T-' . str_pad($num, 3, '0', STR_PAD_LEFT);
-}}
-"""
+          config = (
+            "<?php\n"
+            f"define('DB_HOST', '{host}');\n"
+            f"define('DB_NAME', '{name}');\n"
+            f"define('DB_USER', '{name}');\n"
+            f"define('DB_PASS', '{pwd}');\n\n"
+            "function getDB() {\n"
+            "    try {\n"
+            "        $pdo = new PDO(\n"
+            "            \"mysql:host=\" . DB_HOST . \";dbname=\" . DB_NAME . \";charset=utf8mb4\",\n"
+            "            DB_USER,\n"
+            "            DB_PASS,\n"
+            "            [\n"
+            "                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,\n"
+            "                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC\n"
+            "            ]\n"
+            "        );\n"
+            "        return $pdo;\n"
+            "    } catch (PDOException $e) {\n"
+            "        die(json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]));\n"
+            "    }\n"
+            "}\n\n"
+            "function getToday() {\n"
+            "    return date('Y-m-d');\n"
+            "}\n\n"
+            "function formatToken($num) {\n"
+            "    return 'T-' . str_pad($num, 3, '0', STR_PAD_LEFT);\n"
+            "}\n"
+          )
           with open("config.php", "w", encoding="utf-8", newline="\n") as f:
             f.write(config)
           PY
